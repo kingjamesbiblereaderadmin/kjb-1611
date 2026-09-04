@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Info, Moon, Sun, SunMoon, Menu, X, ChevronLeft, ChevronDown, ChevronRight, RotateCw, ScrollText, Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Info, Moon, Sun, SunMoon, Menu, X, ChevronLeft, ChevronDown, ChevronRight, RotateCw, ScrollText, Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { useTheme } from '@/lib/themeContext';
 import { useHeaderHide } from '@/lib/HeaderHideContext';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
