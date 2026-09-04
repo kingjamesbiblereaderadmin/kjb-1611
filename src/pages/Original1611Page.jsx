@@ -156,12 +156,28 @@ export default function Original1611Page() {
           layerDiv.innerHTML = '';
           layerDiv.style.width = `${viewport.width}px`;
           layerDiv.style.height = `${viewport.height}px`;
-          const layerTask = new pdfjsLib.TextLayer({
-            textContentSource: textContent,
-            container: layerDiv,
-            viewport,
-          });
-          await layerTask.render();
+          const [vA, vB, vC, vD, vE, vF] = viewport.transform;
+          for (const item of textContent.items) {
+            if (!item.str) continue;
+            const m = item.transform;
+            const tx = [
+              vA * m[0] + vB * m[2],
+              vA * m[1] + vB * m[3],
+              vC * m[0] + vD * m[2],
+              vC * m[1] + vD * m[3],
+              vA * m[4] + vB * m[5] + vE,
+              vC * m[4] + vD * m[5] + vF,
+            ];
+            const fontHeight = Math.hypot(tx[2], tx[3]);
+            const angle = Math.atan2(tx[1], tx[0]);
+            const span = document.createElement('span');
+            span.textContent = item.str;
+            span.style.left = `${tx[4]}px`;
+            span.style.top = `${tx[5] - fontHeight}px`;
+            span.style.fontSize = `${fontHeight}px`;
+            if (angle) span.style.transform = `rotate(${angle}rad)`;
+            layerDiv.appendChild(span);
+          }
         }
       } catch (err) {
         if (err?.name !== 'RenderingCancelledException') {
