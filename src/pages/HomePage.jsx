@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Heart, Library, Info, List, Settings, Bookmark, FlaskConical } from 'lucide-react';
+import { BookOpen, Heart, Library, Info, List, Settings, Bookmark, FlaskConical, ScrollText } from 'lucide-react';
 import QuickLinkCard from '@/components/home/QuickLinkCard';
 import OfflineStatusBanner from '@/components/OfflineStatusBanner';
 import IncognitoWarning from '@/components/IncognitoWarning';
@@ -13,6 +13,7 @@ const QUICK_LINKS = [
   { path: '/advanced-search', icon: FlaskConical, label: 'Advanced Search', desc: 'Research verses by properties', iconGradient: 'from-indigo-500 to-purple-600' },
   { path: '/gospel', icon: Heart, label: 'Gospel', desc: 'Learn how to be saved', iconGradient: 'from-rose-500 to-pink-600' },
   { path: '/resources', icon: Library, label: 'Resources', desc: 'KJB defence & study', iconGradient: 'from-violet-500 to-purple-600' },
+  { path: '/1611', icon: ScrollText, label: '1611 Original', desc: 'Browse the original scan', iconGradient: 'from-amber-700 to-yellow-800' },
   { path: '/about', icon: Info, label: 'About', desc: 'Ministry & links', iconGradient: 'from-sky-500 to-cyan-600' },
   { path: '/settings', icon: Settings, label: 'Settings', desc: 'Offline downloads & info', iconGradient: 'from-slate-500 to-slate-700' },
 ];
