@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, Outlet } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/themeContext';
@@ -19,12 +19,13 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 // repurposed to host only the 1611 facsimile viewer. Removed every route/page
 // that belonged to the full reader (Bible reading, search, saved verses,
 // settings, extension pages, Spanish pages, Discord, changelog, credits,
-// legacy reader, dev tools, etc.) — kept Home, the 1611 reader, and basic
-// legal/auth pages. Underlying libs/components/entities for the removed
-// features were left in place (not deleted) since many are shared
-// infrastructure; only the routes/nav surfacing them were removed.
+// legacy reader, dev tools, etc.), and later removed the home page too — the
+// app now opens straight into the 1611 reader at /read (root "/" redirects
+// there). Kept the 1611 reader, About, and basic legal/auth pages.
+// Underlying libs/components/entities for the removed features were left in
+// place (not deleted) since many are shared infrastructure; only the
+// routes/nav surfacing them were removed.
 const loaders = {
-  Home: () => import('@/pages/HomePage').catch((err) => { console.error('Failed to load HomePage:', err); throw err; }),
   About: () => import('@/pages/AboutPage').catch((err) => { console.error('Failed to load AboutPage:', err); throw err; }),
   Privacy: () => import('@/pages/PrivacyPolicyPage.jsx').catch((err) => { console.error('Failed to load PrivacyPolicyPage:', err); throw err; }),
   Terms: () => import('@/pages/TermsOfServicePage').catch((err) => { console.error('Failed to load TermsOfServicePage:', err); throw err; }),
@@ -36,7 +37,6 @@ const loaders = {
   Contact: () => import('@/pages/ContactPage').catch((err) => { console.error('Failed to load ContactPage:', err); throw err; }),
   Original1611: () => import('@/pages/Original1611Page.jsx').catch((err) => { console.error('Failed to load Original1611Page:', err); throw err; }),
 };
-const HomePage = lazy(loaders.Home);
 const AboutPage = lazy(loaders.About);
 const PrivacyPolicyPage = lazy(loaders.Privacy);
 const TermsOfServicePage = lazy(loaders.Terms);
@@ -49,9 +49,8 @@ const ContactPage = lazy(loaders.Contact);
 const Original1611Page = lazy(loaders.Original1611);
 
 const getLoaderForPath = (pathname) => {
-  if (pathname === '/') return loaders.Home;
   if (pathname === '/about') return loaders.About;
-  if (pathname === '/1611') return loaders.Original1611;
+  if (pathname === '/read' || pathname === '/') return loaders.Original1611;
   return null;
 };
 
@@ -192,11 +191,12 @@ const AuthenticatedApp = () => {
         isFadingOut={fadeSplash}
         onDone={handleSplashDone}
         mode={splashMode}
-        isVisible={showSplash}
+        isVisible={showSplash && location.pathname !== '/read' && location.pathname !== '/'}
         isLookup={false}
       />
       <ChunkErrorBoundary>
         <Routes location={location}>
+            <Route path="/" element={<Navigate to="/read" replace />} />
             <Route path="/login" element={<Suspense fallback={<RouteLoader />}><LoginPage /></Suspense>} />
             <Route path="/forgot-password" element={<Suspense fallback={<RouteLoader />}><ForgotPasswordPage /></Suspense>} />
             <Route path="/reset-password" element={<Suspense fallback={<RouteLoader />}><ResetPasswordPage /></Suspense>} />
@@ -205,10 +205,14 @@ const AuthenticatedApp = () => {
             <Route path="/terms" element={<Suspense fallback={<RouteLoader />}><TermsOfServicePage /></Suspense>} />
             <Route path="/privacy" element={<Suspense fallback={<RouteLoader />}><PrivacyPolicyPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<RouteLoader />}><ContactPage /></Suspense>} />
+            {/* The reader is a standalone, full-screen route (own header/nav,
+                hides the AppLayout chrome) rather than living inside
+                AppLayout's Outlet — it's now the app's primary screen, and
+                keeping it outside avoids AppLayout's own fixed bottom nav
+                bar fighting with the reader's own bottom page-nav bar. */}
+            <Route path="/read" element={<Suspense fallback={<RouteLoader />}><Original1611Page /></Suspense>} />
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Suspense fallback={<RouteLoader />}><FadeIn><HomePage /></FadeIn></Suspense>} />
               <Route path="/about" element={<Suspense fallback={<RouteLoader />}><FadeIn><AboutPage /></FadeIn></Suspense>} />
-              <Route path="/1611" element={<Suspense fallback={<RouteLoader />}><Original1611Page /></Suspense>} />
             </Route>
             <Route path="*" element={<PageNotFound />} />
           </Routes>
