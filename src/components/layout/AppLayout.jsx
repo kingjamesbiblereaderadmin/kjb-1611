@@ -158,20 +158,9 @@ export default function AppLayout() {
     try { localStorage.setItem('kjb-last-route', pathname); } catch {}
   }, [pathname]);
 
-  // On cold app-open / full reload, if the last route was the Reader, reopen it
-  // (with its last chapter + scroll restored). Runs once on mount only.
-  const didRestoreRouteRef = useRef(false);
-  useEffect(() => {
-    if (didRestoreRouteRef.current) return;
-    didRestoreRouteRef.current = true;
-    try {
-      const last = localStorage.getItem('kjb-last-route');
-      if (last === '/read' && pathname === '/') {
-        navigate('/read', { replace: true });
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Cold-open route restore was tied to the old full Reader (/read), which
+  // no longer exists in this trimmed-down app — removed to avoid sending
+  // returning visitors to a 404.
 
   // Track visited in-app routes ourselves rather than relying on raw browser
   // history (window.history.length / navigate(-1) is unreliable after a hard
