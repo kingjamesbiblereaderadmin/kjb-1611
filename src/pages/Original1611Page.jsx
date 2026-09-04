@@ -156,12 +156,12 @@ export default function Original1611Page() {
           layerDiv.innerHTML = '';
           layerDiv.style.width = `${viewport.width}px`;
           layerDiv.style.height = `${viewport.height}px`;
-          const layerTask = pdfjsLib.renderTextLayer({
+          const layerTask = new pdfjsLib.TextLayer({
             textContentSource: textContent,
             container: layerDiv,
             viewport,
           });
-          await layerTask.promise;
+          await layerTask.render();
         }
       } catch (err) {
         if (err?.name !== 'RenderingCancelledException') {
