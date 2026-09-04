@@ -89,17 +89,25 @@ export default function Original1611Page() {
   useEffect(() => {
     if (!pdfUrl) return;
     let cancelled = false;
-    const task = pdfjsLib.getDocument({ url: pdfUrl });
-    task.promise
-      .then((doc) => {
+    let task = null;
+    loadPdfjs()
+      .then((pdfjsLib) => {
         if (cancelled) return;
+        task = pdfjsLib.getDocument({ url: pdfUrl });
+        return task.promise;
+      })
+      .then((doc) => {
+        if (cancelled || !doc) return;
         setPdfDoc(doc);
         setNumPages(doc.numPages);
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || 'Failed to load the PDF.');
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      try { task?.destroy(); } catch { /* noop */ }
+    };
   }, [pdfUrl]);
 
   const clampPage = useCallback(
