@@ -7,7 +7,6 @@ import { useInstallPrompt } from '@/hooks/useInstallPrompt';
 import { useBrowserZoom } from '@/hooks/useBrowserZoom';
 import { Switch } from '@/components/ui/switch';
 import { getAutoRotate, setAutoRotate as persistAutoRotate, applyAutoRotate } from '@/lib/autoRotate';
-import BibleSearchBar from '@/components/bible/BibleSearchBar';
 import ShortcutsModal from '@/components/ShortcutsModal';
 import ScrollToTop from '@/components/ScrollToTop';
 import AutoUpdateHandler from '@/components/AutoUpdateHandler';
