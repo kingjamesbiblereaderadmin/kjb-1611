@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the bitmap splash (drawable/splash.png) background for API
+         <31, kept in sync so the modern SplashScreen API (values-v31) and the
+         legacy bitmap approach look identical across all Android versions. -->
+    <color name="splashBackground">#FFFFFF</color>
+</resources>

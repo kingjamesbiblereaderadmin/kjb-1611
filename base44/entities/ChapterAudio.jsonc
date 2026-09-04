@@ -1,0 +1,66 @@
+{
+  "name": "ChapterAudio",
+  "type": "object",
+  "properties": {
+    "book": {
+      "type": "string",
+      "description": "Full canonical book title matching the `name` field of the book in bibleData.js (e.g. 'The First Book of Moses, called Genesis', 'The Book of Amos', 'The Revelation of Saint John the Divine')"
+    },
+    "book_order": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 66,
+      "description": "Canonical book order 1-66 (Genesis=1 ... Revelation=66) for sequencing narration across the whole Bible"
+    },
+    "chapter": {
+      "type": "number",
+      "description": "Chapter number (1-based)"
+    },
+    "audio_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the mp3 narration file for this chapter"
+    },
+    "timing_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to a JSON file of per-word timing data for karaoke-style word highlighting during playback. Shape: { \"words\": [ { \"verse\": number, \"word_index\": number, \"start_ms\": number, \"end_ms\": number }, ... ] } where word_index is the 0-based position of the word within that verse's own text (verse.split(' ')[word_index])."
+    },
+    "voice": {
+      "type": "string",
+      "description": "TTS voice identifier, e.g. 'en-GB-ThomasNeural'"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Audio duration in seconds (optional, for display)"
+    },
+    "verse_count": {
+      "type": "number",
+      "description": "Number of verses in this chapter (optional, for reference)"
+    }
+  },
+  "required": [
+    "book",
+    "book_order",
+    "chapter",
+    "audio_url"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

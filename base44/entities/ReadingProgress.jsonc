@@ -1,0 +1,43 @@
+{
+  "name": "ReadingProgress",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the reading (YYYY-MM-DD)"
+    },
+    "book": {
+      "type": "string",
+      "description": "Book name"
+    },
+    "chapter": {
+      "type": "integer",
+      "description": "Chapter number"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the reading is completed"
+    }
+  },
+  "required": [
+    "date",
+    "book",
+    "chapter"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

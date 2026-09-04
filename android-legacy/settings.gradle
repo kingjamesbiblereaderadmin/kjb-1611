@@ -1,0 +1,2 @@
+rootProject.name = "KJB READER"
+include ':app'

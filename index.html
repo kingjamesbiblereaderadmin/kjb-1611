@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <!-- Reconciled with GitHub main (commit b5563525): site-wide Home/Read/Gospel/Resources tabs, sidepanel shell, compact reader + search UI. -->
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Pre-empt the vite plugin's unhandledrejection handler, which crashes
+         ("Cannot read properties of undefined (reading 'match')") when the
+         rejected value is not an Error object. This capturing-phase listener
+         runs before the plugin's handler and stops propagation for non-Error
+         rejections so the plugin never sees them. -->
+    <script>
+      (function () {
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event && event.reason;
+          // The vite plugin's handler accesses reason.stack.match(...). If the
+          // rejection is not a real Error (no string .stack), the plugin crashes
+          // with "Cannot read properties of undefined (reading 'match')". Stop
+          // propagation for any non-Error rejection so the plugin never sees it.
+          if (!reason || typeof reason.stack !== 'string') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+          }
+          // Swallow SW not-found rejections (preview sandbox can't serve /sw.js)
+          var msg = (typeof reason.message === 'string') ? reason.message : '';
+          if (/Failed to (update|register) a ServiceWorker/i.test(msg)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+          }
+        }, true);
+      })();
+    </script>
+    <!-- Detect Internet Explorer / very old browsers and redirect to the legacy
+         reader BEFORE any modern JS runs (the React app can't run on IE). -->
+    <script>
+      (function () {
+        try {
+          var ua = navigator.userAgent || '';
+          // IE10/11 ("Trident") and older IE ("MSIE"). Not Edge.
+          var isIE = /Trident|MSIE/i.test(ua);
+          // A dedicated legacy domain should ALWAYS land on the server-rendered
+          // legacy reader, regardless of browser. Send every visitor straight
+          // to the function endpoint (which the React /legacy page only redirects
+          // to anyway).
+          var legacyHost = (window.location.hostname || '').toLowerCase();
+          var qsEarly = window.location.search || '';
+          var optedOutEarly = qsEarly.indexOf('nolegacy=1') !== -1;
+          var STATIC_LEGACY_FILE = 'https://media.base44.com/files/public/6a05d76723afe58d80c589e8/kjb-reader-legacy.html';
+          // Static file redirect removed — legacy domains now serve the function page directly.
+          // Only treat as "too old" if it's clearly NOT a modern browser.
+          // The bare Promise/fetch check can misfire in some embedded/in-app
+          // browsers, so we additionally require an old-IE-style userAgent.
+          var tooOld = isIE && ((typeof window.Promise === 'undefined') || (typeof window.fetch === 'undefined'));
+          // Parse query string manually (IE doesn't support URLSearchParams reliably)
+          var qs = window.location.search || '';
+          var optedOut = qs.indexOf('nolegacy=1') !== -1;
+          // A ?tab= param AT THE ROOT path ("/") means a legacy deep link
+          // (gospel/resources/about/debug) — route it to the server-rendered
+          // legacy reader. Only fires on "/" so it never interferes with the
+          // "/legacy" route's own ?tab= links/form submits.
+          var atRoot = window.location.pathname === '/' || window.location.pathname === '';
+          var wantsLegacyTab = atRoot && qs.indexOf('tab=') !== -1;
+
+          // A direct visit to "/legacy" always means the server-rendered Full
+          // Bible reader — send EVERY browser straight to the function endpoint
+          // (the React /legacy page can't run on IE and only redirects anyway).
+          if (window.location.pathname === '/legacy' && !optedOut) {
+            var lHost = window.location.hostname || '';
+            var lIsCustom = lHost.indexOf('base44.app') === -1 && lHost.indexOf('localhost') === -1;
+            var lOrigin = window.location.origin || (window.location.protocol + '//' + window.location.host);
+            if (lIsCustom) {
+              window.location.replace(lOrigin + '/functions/legacy');
+            } else {
+              var lAppId = null;
+              var lIdx = qs.indexOf('app_id=');
+              if (lIdx !== -1) {
+                var lPart = qs.substring(lIdx + 7);
+                var lAmp = lPart.indexOf('&');
+                lAppId = lAmp !== -1 ? lPart.substring(0, lAmp) : lPart;
+              }
+              if (!lAppId) { try { lAppId = localStorage.getItem('base44_app_id'); } catch (e) {} }
+              window.location.replace(lAppId ? '/api/apps/' + lAppId + '/functions/legacy' : '/functions/legacy');
+            }
+            return;
+          }
+          if (wantsLegacyTab && !optedOut) {
+            var tHost = window.location.hostname || '';
+            var tIsCustom = tHost.indexOf('base44.app') === -1 && tHost.indexOf('localhost') === -1;
+            if (tIsCustom) {
+              window.location.replace(window.location.origin + '/legacy' + qs);
+            } else {
+              var tAppId = null;
+              var tIdx = qs.indexOf('app_id=');
+              if (tIdx !== -1) {
+                var tPart = qs.substring(tIdx + 7);
+                var tAmp = tPart.indexOf('&');
+                tAppId = tAmp !== -1 ? tPart.substring(0, tAmp) : tPart;
+              }
+              if (!tAppId) { try { tAppId = localStorage.getItem('base44_app_id'); } catch (e) {} }
+              window.location.replace((tAppId ? '/api/apps/' + tAppId + '/functions/legacy' : '/functions/legacy') + qs);
+            }
+            return;
+          }
+          if ((isIE || tooOld) && !optedOut) {
+            var host = window.location.hostname || '';
+            var isCustom = host.indexOf('base44.app') === -1 && host.indexOf('localhost') === -1;
+            // IE8 lacks window.location.origin — build it manually as a fallback.
+            var origin = window.location.origin || (window.location.protocol + '//' + window.location.host);
+            var legacyUrl;
+            if (isCustom) {
+              legacyUrl = origin + '/functions/legacy';
+            } else {
+              var appId = null;
+              var appIdx = qs.indexOf('app_id=');
+              if (appIdx !== -1) {
+                var appPart = qs.substring(appIdx + 7);
+                var ampIdx = appPart.indexOf('&');
+                appId = ampIdx !== -1 ? appPart.substring(0, ampIdx) : appPart;
+              }
+              if (!appId) {
+                try { appId = localStorage.getItem('base44_app_id'); } catch (e) {}
+              }
+              legacyUrl = appId
+                ? '/api/apps/' + appId + '/functions/legacy'
+                : '/functions/legacy';
+            }
+            // Force immediate redirect before any rendering
+            window.location.replace(legacyUrl);
+          }
+        } catch (e) {
+          // If detection fails on an old browser, redirect STRAIGHT to the
+          // server-rendered function (never the React /legacy page, which IE
+          // can't run). Use the origin path which works on the custom domain.
+          try {
+            window.location.replace(window.location.origin + '/functions/legacy');
+          } catch (e2) {
+            try { window.location.replace('/functions/legacy'); } catch (e3) {}
+          }
+        }
+      })();
+    </script>
+    <!-- Favicons: the same KJB Reader icon used by the PWA manifest, served
+         same-origin via the pwaIcon proxy (which fetches the kjb-icon192/512
+         PNG assets) so it always resolves — never the dead cross-app media
+         reference from the previous app instance. Browsers prefer these
+         explicit <link rel="icon"> entries over the platform's default
+         /favicon.ico redirect. -->
+    <link rel="icon" type="image/png" sizes="512x512" href="/functions/pwaIcon?size=512" />
+    <link rel="shortcut icon" type="image/png" href="/functions/pwaIcon?size=512" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Capture beforeinstallprompt early (Chrome/Edge/Samsung/Android mobile) -->
+    <script>
+      (function() {
+        if (typeof window === 'undefined') return;
+        // Set up global deferred prompt storage immediately
+        window.kjbDeferredPrompt = null;
+        window.kjbPromptFired = false;
+        window.kjbPromptedThisSession = false;
+
+        // Capture beforeinstallprompt as early as possible (mobile + desktop).
+        // Chromium browsers (Chrome/Edge/Samsung Internet) only fire this event
+        // for an app that is NOT currently installed — so seeing it fire is the
+        // most reliable signal we have that any previously-remembered
+        // "installed" flag is now stale (e.g. the user uninstalled the PWA from
+        // their home screen/app list). Clearing it here is what makes the app
+        // automatically fall back to showing the Install button again, without
+        // the user having to manually reset anything.
+        window.addEventListener('beforeinstallprompt', function(e) {
+          e.preventDefault();
+          window.kjbDeferredPrompt = e;
+          window.kjbPromptFired = true;
+          window.kjbPromptedThisSession = true;
+          try { localStorage.removeItem('kjb-is-installed'); } catch (err) {}
+          console.log('[PWA] beforeinstallprompt captured - not currently installed, native prompt ready');
+          window.dispatchEvent(new Event('kjb-install-change'));
+          window.dispatchEvent(new Event('pwa-installable'));
+        });
+
+        // Fires the moment the user accepts the native install prompt (or
+        // installs via the browser's own address-bar/menu affordance).
+        window.addEventListener('appinstalled', function() {
+          console.log('[PWA] appinstalled event fired');
+          window.kjbDeferredPrompt = null;
+          window.kjbPromptFired = false;
+          try {
+            localStorage.setItem('kjb-is-installed', 'true');
+            // Don't re-nag the install/welcome prompt after a successful install
+            localStorage.setItem('kjb-prompt-dismissed', 'true');
+            localStorage.setItem('kjb-install-dismissed', 'true');
+          } catch (e) {}
+          // Let the open browser tab (useInstallPrompt / FirstLoadPrompt /
+          // InstallAppSection) flip to the "Installed" state immediately.
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new Event('kjb-install-change'));
+        });
+      })();
+    </script>
+    <!-- Allow caching for offline support -->
+    <meta http-equiv="Cache-Control" content="public, max-age=3600, stale-while-revalidate=86400" />
+    <title>KJB Reader</title>
+    <!-- Preload critical resources -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Dancing+Script:wght@300;400;500;600;700&family=Great+Vibes&family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Comic+Neue:ital,wght@0,400;0,700;1,400&display=block" />
+    <meta name="description" content="Read the King James Bible (Pure Cambridge Edition) — the pure, infallible Word of God." />
+    <meta name="theme-color" content="#0f1117" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KJB Reader" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/functions/pwaIcon?size=512" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- Performance optimizations -->
+    <link rel="preconnect" href="https://media.base44.com" crossorigin />
+    <link rel="dns-prefetch" href="https://media.base44.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="image" href="https://media.base44.com/images/public/6a05d76723afe58d80c589e8/2279e016e_8e738d108_cfb4bf781_Untitled.png" />
+    <link rel="preload" as="font" type="font/woff" crossorigin href="/fonts/OpenDyslexic-regular.woff" />
+    <link rel="preload" as="font" type="font/woff" crossorigin href="/fonts/OpenDyslexic-bold.woff" />
+    <link rel="preload" as="font" type="font/woff" crossorigin href="/fonts/OpenDyslexic-italic.woff" />
+    <meta name="description" content="Read the King James Bible (Pure Cambridge Edition) with offline support, daily verses, and beautiful typography." />
+    <meta name="keywords" content="Bible, King James Bible, KJB, Pure Cambridge Edition, offline Bible, Christian, scripture" />
+    <!-- Social sharing preview (Open Graph / Twitter Card) -->
+    <meta property="og:title" content="KJB Reader" />
+    <meta property="og:description" content="Read the King James Bible (Pure Cambridge Edition) — the pure, infallible Word of God." />
+    <meta property="og:image" content="https://media.base44.com/images/public/6a8011c360ff52dad38eb2f3/d913cc094_image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KJB Reader" />
+    <meta name="twitter:description" content="Read the King James Bible (Pure Cambridge Edition) — the pure, infallible Word of God." />
+    <meta name="twitter:image" content="https://media.base44.com/images/public/6a8011c360ff52dad38eb2f3/d913cc094_image.png" />
+    <!-- PWA manifest: served by the dynamic `manifest` backend function so the
+         icons/screenshots saved from the DevTools Manifest editor take effect
+         live (it reads the ManifestConfig entity and responds no-store).
+         The URL is STILL a single stable path (required for Chromium install
+         eligibility) — it does NOT change per load, so the "Add to Home Screen"
+         / install prompt on Edge/Chrome mobile keeps working. -->
+    <link rel="manifest" href="/functions/manifest" id="kjb-manifest-link" />
+    <!-- Prevent flash of wrong theme: apply saved theme BEFORE React mounts -->
+    <script>
+      (function() {
+        try {
+          // DIAGNOSTIC (temp, v20260904): dump origin + raw localStorage values
+          // at the earliest possible point (before any JS has a chance to touch
+          // them) so a cold offline launch tells us whether this is a wrong-
+          // origin/isolated-storage problem (all keys null, origin unexpected)
+          // or something narrower (only kjb-theme-mode missing). Remove once
+          // the offline-theme-reset bug is found.
+          console.log('[KJB-DEBUG] origin=' + location.origin + ' href=' + location.href);
+          console.log('[KJB-DEBUG] kjb-theme-mode=' + JSON.stringify(localStorage.getItem('kjb-theme-mode')) +
+            ' kjb-colour=' + JSON.stringify(localStorage.getItem('kjb-colour')) +
+            ' kjb-color-mode=' + JSON.stringify(localStorage.getItem('kjb-color-mode')) +
+            ' kjb-reader-font-family=' + JSON.stringify(localStorage.getItem('kjb-reader-font-family')) +
+            ' localStorage.length=' + localStorage.length);
+        } catch (e) { console.log('[KJB-DEBUG] error reading localStorage pre-mode: ' + e); }
+        try {
+          var mode = localStorage.getItem('kjb-theme-mode') || 'system';
+          var isDark;
+          if (mode === 'dark') isDark = true;
+          else if (mode === 'light') isDark = false;
+          else if (mode === 'auto') {
+            var h = new Date().getHours();
+            isDark = h < 6 || h >= 18;
+          } else {
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          if (isDark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+        try {
+          // Apply the manual "App Zoom" setting BEFORE first paint, matching
+          // useBrowserZoom.js's manualFactor calc. Without this, the boot
+          // splash and first React paint render at 100% zoom, then visibly
+          // jump to the correct size once useBrowserZoom's effect runs.
+          var kjbZoomVal = parseInt(localStorage.getItem('kjb-layout-zoom') || '100', 10);
+          var kjbZoomFactor = (kjbZoomVal >= 50 && kjbZoomVal <= 200) ? kjbZoomVal / 100 : 1;
+          if (kjbZoomFactor !== 1) {
+            document.documentElement.style.setProperty('--kjb-zoom-scale', String(kjbZoomFactor));
+            // Also set the root font-size directly (not just the CSS variable) —
+            // the variable only takes effect once index.css's `:root { font-size:
+            // calc(...) }` rule loads, which can lag behind this inline script.
+            // Without this, the rem-sized boot splash below paints at the
+            // default 100% size first, then visibly jumps to the saved zoom
+            // once the stylesheet arrives. Setting it here makes the splash
+            // correctly sized from the very first frame, every reopen.
+            document.documentElement.style.fontSize = (kjbZoomFactor * 100) + '%';
+          }
+        } catch (e) {}
+        try {
+          // A shared link can carry ?font=dyslexic or ?font=hyperlegible —
+          // persist it so the recipient opens (and stays) in that font mode.
+          var qsFont = window.location.search || '';
+          if (qsFont.indexOf('font=dyslexic') !== -1) {
+            localStorage.setItem('kjb-a11y-font', 'dyslexic');
+          } else if (qsFont.indexOf('font=hyperlegible') !== -1) {
+            localStorage.setItem('kjb-a11y-font', 'hyperlegible');
+          }
+          var a11yFont = localStorage.getItem('kjb-a11y-font');
+          if (a11yFont === 'dyslexic' || a11yFont === 'hyperlegible' || a11yFont === 'system') {
+            document.documentElement.setAttribute('data-a11y-font', a11yFont);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Boot background matches the splash placeholder — light in light mode,
+         dark in dark mode — to prevent a flash of the wrong color before React
+         mounts. The inline theme script adds `html.dark` for dark mode. */
+      html, body { background-color: #fef9f3; color: #0f1718; margin: 0; width: 100%; min-height: 100vh; }
+      html.dark, html.dark body { background-color: #0f1117; color: #ffffff; }
+      #root { min-height: 100vh; width: 100%; background-color: inherit; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Static placeholder that EXACTLY matches the React SplashScreen's idle
+           look (same logo size, progress bar, uppercase text) so there is no
+           visual flash/jump when React mounts and takes over. Colors are theme
+           aware: dark bg in dark mode, light bg in light mode. The inline theme
+           script above adds the `dark` class before this renders, so we read it
+           and set the splash colors here before paint. -->
+      <div id="kjb-boot-splash" style="position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0f1117;opacity:0;transition:opacity .2s ease;">
+        <div style="display:flex;flex-direction:column;align-items:center;margin-top:-4rem;gap:48px;">
+          <img
+            id="kjb-boot-logo"
+            alt="KJB Reader Logo"
+            style="width:11rem;height:11rem;object-fit:contain;border-radius:1rem;padding:0.75rem;background:#0f1117;"
+          />
+          <div style="display:flex;flex-direction:column;align-items:center;gap:20px;width:16rem;">
+            <div id="kjb-boot-track" style="width:100%;height:6px;border-radius:9999px;overflow:hidden;position:relative;background:rgba(255,255,255,0.08);">
+              <div style="position:absolute;top:0;height:100%;border-radius:9999px;width:40%;background:#4f6aff;animation:kjb-boot-indeterminate 1.2s ease-in-out infinite;"></div>
+            </div>
+            <span id="kjb-boot-text" style="font-family:Inter,system-ui,sans-serif;font-size:0.875rem;font-weight:300;letter-spacing:0.25em;text-transform:uppercase;text-align:center;color:#c8cdd8;">Welcome to KJB Reader.</span>
+          </div>
+        </div>
+      </div>
+      <script>
+        (function () {
+          try {
+            // If this fresh page load is landing directly on /search --
+            // i.e. a "Look Up" from another app, or a shared/bookmarked
+            // search link -- "Welcome to KJB Reader." doesn't fit; match
+            // the React SplashScreen's own isLookup logic (App.jsx /
+            // SplashScreen.jsx) so this static PRE-React placeholder shows
+            // the same "LOOKING UP..." wording instead. Without this, the
+            // static placeholder (visible for a brief moment before React
+            // mounts and takes over) showed the generic welcome text, then
+            // visibly swapped to "LOOKING UP..." once React's own splash
+            // rendered -- a small but noticeable mismatched flash.
+            var bootText = document.getElementById('kjb-boot-text');
+            // DIAGNOSTIC: gated behind Settings > App Info > "Startup
+            // Diagnostics" (kjb-debug-diagnostics). Off by default -- a
+            // small tappable button instead of a full-width box, since the
+            // box was covering the reader/splash on small screens. Tapping
+            // copies the diagnostic text to the clipboard rather than
+            // displaying it all on screen.
+            try {
+              if (localStorage.getItem('kjb-debug-diagnostics') === 'true') {
+                var buildDbgText = function(tag) {
+                  var carryParam = (location.search || '').indexOf('__kjb_carry=') !== -1;
+                  return '[' + tag + '] origin=' + location.origin +
+                    ' | hasCarryParam=' + carryParam +
+                    ' | search=' + location.search +
+                    ' | mode=' + JSON.stringify(localStorage.getItem('kjb-theme-mode')) +
+                    ' | colour=' + JSON.stringify(localStorage.getItem('kjb-colour')) +
+                    ' | color-mode=' + JSON.stringify(localStorage.getItem('kjb-color-mode')) +
+                    ' | font=' + JSON.stringify(localStorage.getItem('kjb-reader-font-family')) +
+                    ' | hasVisited=' + JSON.stringify(localStorage.getItem('kjb-has-visited-app')) +
+                    ' | ls.length=' + localStorage.length +
+                    ' | online=' + navigator.onLine;
+                };
+                var dbgLines = [buildDbgText('pre-main')];
+                // Pre-main.jsx is EXPECTED to show ls.length=0 even when the
+                // carry param is present -- main.jsx hasn't decoded/applied
+                // it yet at this point in the file. The post-mount line
+                // 800ms later is the one that actually proves whether the
+                // carry applied in time.
+                setTimeout(function () { dbgLines.push(buildDbgText('post-main+800ms')); }, 800);
+
+                var fallbackCopy = function (text) {
+                  try {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  } catch (e) {}
+                };
+
+                var dbgBtn = document.createElement('button');
+                dbgBtn.id = 'kjb-debug-btn';
+                dbgBtn.textContent = 'DBG';
+                dbgBtn.style.cssText = 'position:fixed;right:10px;bottom:10px;z-index:9999999;background:rgba(0,0,0,0.75);color:#0f0;font-family:monospace;font-size:11px;font-weight:bold;padding:8px 12px;border-radius:20px;border:1px solid #0f0;opacity:0.85;';
+                dbgBtn.addEventListener('click', function () {
+                  var text = dbgLines.join('\n');
+                  var showCopied = function () {
+                    dbgBtn.textContent = 'Copied!';
+                    setTimeout(function () { dbgBtn.textContent = 'DBG'; }, 1200);
+                  };
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(showCopied).catch(function () {
+                      fallbackCopy(text);
+                      showCopied();
+                    });
+                  } else {
+                    fallbackCopy(text);
+                    showCopied();
+                  }
+                });
+                document.body.appendChild(dbgBtn);
+              }
+            } catch (e) {}
+            if (bootText) {
+              var hasVisited = localStorage.getItem('kjb-has-visited-app') === 'true';
+              bootText.textContent = (location.pathname === '/search')
+                ? 'Looking up\u2026'
+                : (hasVisited ? 'Welcome back to KJB Reader.' : 'Welcome to KJB Reader.');
+            }
+            // Use the base64-cached logo from localStorage if available (works
+            // offline without SW). Falls back to the cross-origin URL online.
+            var logoEl = document.getElementById('kjb-boot-logo');
+            var cachedLogo = localStorage.getItem('kjb-splash-logo-dataurl');
+            logoEl.src = cachedLogo || 'https://media.base44.com/images/public/6a05d76723afe58d80c589e8/2279e016e_8e738d108_cfb4bf781_Untitled.png';
+            if (!document.documentElement.classList.contains('dark')) {
+              var bg = '#fef9f3';
+              document.getElementById('kjb-boot-splash').style.background = bg;
+              logoEl.style.background = bg;
+              document.getElementById('kjb-boot-track').style.background = 'rgba(0,0,0,0.08)';
+              document.getElementById('kjb-boot-text').style.color = '#5a6472';
+            }
+            // Installed desktop PWAs open at a temporary default window size
+            // that Chrome/Edge resizes to the remembered size almost immediately
+            // after launch. If the splash paints before that resize settles, the
+            // logo/progress bar appear to "shrink" as the window snaps to size —
+            // that's the browser's window, not this content, changing. Hide the
+            // splash for a beat in standalone mode so it only becomes visible
+            // once the window has settled, and reveal instantly everywhere else
+            // (plain browser tabs aren't affected and shouldn't see extra delay).
+            //
+            // Native Android (Capacitor) is excluded from this delay entirely:
+            // it ALSO matches display-mode: standalone, so it was getting this
+            // same 150ms treatment despite the window-resize issue it exists
+            // for being purely a desktop-browser-chrome concern -- a native
+            // Activity is already a fixed, full-screen surface with nothing to
+            // "settle". During that unnecessary delay, this placeholder stayed
+            // invisible while React was often already bootstrapping underneath
+            // (e.g. a "Look Up" launch straight to /search), so whatever React
+            // had rendered so far -- typically the lazy-route Suspense
+            // fallback's spinner -- was briefly visible unmasked, before this
+            // placeholder (and shortly after, the real SplashScreen) finally
+            // appeared. window.androidBridge is Capacitor's own native JS
+            // interface, injected directly by MainActivity.java and
+            // synchronously available the instant any page JS runs in that
+            // WebView -- reliable regardless of online/offline state, unlike
+            // Capacitor's own bridge script injection (see MainActivity.java's
+            // injectNativeMarker()).
+            var boot = document.getElementById('kjb-boot-splash');
+            var isNativeAndroid = !!window.androidBridge;
+            var isStandalone = !isNativeAndroid && ((window.matchMedia && (
+              window.matchMedia('(display-mode: standalone)').matches ||
+              window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+              window.matchMedia('(display-mode: minimal-ui)').matches
+            )) || navigator.standalone === true);
+            if (isStandalone) {
+              setTimeout(function () { boot.style.opacity = '1'; }, 150);
+            } else {
+              boot.style.opacity = '1';
+            }
+          } catch (e) {
+            var fallback = document.getElementById('kjb-boot-splash');
+            if (fallback) fallback.style.opacity = '1';
+          }
+        })();
+      </script>
+      <style>
+        @keyframes kjb-boot-indeterminate {
+          0% { left: -40%; }
+          100% { left: 100%; }
+        }
+      </style>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

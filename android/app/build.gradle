@@ -1,0 +1,91 @@
+apply plugin: 'com.android.application'
+
+// Explicit UTF-8 for javac reading .java source files, rather than relying
+// on the build environment's platform default (not guaranteed to be UTF-8
+// across every CI runner/locale). Without this, any non-ASCII character used
+// directly in a Java string literal -- e.g. the ellipsis previously in
+// MainActivity.java's "Looking up..." overlay text (now plain ASCII dots as
+// a defensive belt-and-suspenders measure, but this covers any future case
+// too) -- risks being misread as a different byte sequence during
+// compilation, silently truncating or corrupting the resulting string at
+// runtime with no compile error to catch it. This is the standard, widely-
+// supported Gradle mechanism for this (android.compileOptions has no
+// `encoding` property in the Android Gradle Plugin DSL).
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+android {
+    namespace "com.kingjamesbiblereader.twa"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.kingjamesbiblereader.twa"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 56
+        versionName "1.55"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        release {
+            // Populated from env vars set by CI (see build-android.yml). A real,
+            // persistent keystore -- NOT regenerated per build -- is required so
+            // every release carries the same signing identity; Play Store rejects
+            // updates signed with a different key than the first upload.
+            def ksPath = System.getenv('ANDROID_KEYSTORE_PATH')
+            if (ksPath != null) {
+                storeFile file(ksPath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // Signing handled here via signingConfigs.release, populated from CI
+            // secrets, so both `assembleRelease` (APK) and `bundleRelease` (AAB)
+            // come out already signed with the persistent release key.
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+configurations.all {
+    // Force a modern androidx.core so WindowCompat.setDecorFitsSystemWindow()
+    // (used in MainActivity for edge-to-edge display) is present -- a
+    // transitive dependency from a Capacitor/Cordova plugin can otherwise
+    // pull in an older androidx.core that lacks it.
+    resolutionStrategy {
+        force "androidx.core:core:$androidxCoreVersion"
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.core:core:$androidxCoreVersion"
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation "androidx.webkit:webkit:1.11.0"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'

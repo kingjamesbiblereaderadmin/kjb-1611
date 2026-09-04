@@ -1,0 +1,70 @@
+{
+  "name": "ManifestConfig",
+  "type": "object",
+  "properties": {
+    "icons": {
+      "type": "array",
+      "description": "Icon entries for the PWA manifest",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "screenshots": {
+      "type": "array",
+      "description": "Screenshot entries for the PWA manifest",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "form_factor": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

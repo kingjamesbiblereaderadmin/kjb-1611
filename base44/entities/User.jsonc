@@ -1,0 +1,30 @@
+{
+  "properties": {
+    "role": {
+      "type": "string",
+      "description": "The role of the user in the app",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    }
+  },
+  "required": [
+    "role"
+  ],
+  "name": "User",
+  "type": "object",
+  "rls": {
+    "read": {
+      "id": "{{user.id}}"
+    },
+    "update": {
+      "id": "{{user.id}}"
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

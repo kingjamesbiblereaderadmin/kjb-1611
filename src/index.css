@@ -1,0 +1,525 @@
+/* Fonts are loaded directly in index.html for faster rendering to prevent FOUT (Flash of Unstyled Text) */
+/* Atkinson Hyperlegible — high-legibility font for low-vision readers */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* OpenDyslexic — accessible font designed for readers with dyslexia.
+   font-display: block — the font is preloaded in <head> and only 16KB, so it
+   loads near-instantly. 'block' keeps text invisible briefly until OpenDyslexic
+   is ready, preventing a flash of the Comic Sans fallback ('swap' was showing
+   Comic Sans during the load window). */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-italic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-serif: 'Merriweather', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Root font-size scales with browser zoom (Ctrl±) via --kjb-zoom-scale,
+       set by useBrowserZoom hook. This makes all rem-based layout shrink when
+       zoomed out and grow when zoomed in — "layout shrinks with text". */
+    font-size: calc(100% * var(--kjb-zoom-scale, 1));
+
+    /* Vibrant blue→indigo→purple theme (matches Verse of the Day style) */
+    --background: 240 30% 99%;
+    --foreground: 248 55% 8%;
+    --card: 240 12% 95%;
+    --card-foreground: 248 55% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 248 55% 8%;
+    --primary: 245 33% 17%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 14% 89%;
+    --secondary-foreground: 250 30% 24%;
+    --muted: 240 14% 91%;
+    --muted-foreground: 245 12% 40%;
+    --accent: 248 80% 56%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 245 22% 68%;
+    --input: 245 22% 68%;
+    --ring: 250 75% 55%;
+    --radius: 0.375rem;
+    --sidebar-background: 245 40% 98%;
+    --sidebar-foreground: 245 35% 15%;
+    --sidebar-primary: 245 33% 17%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 245 40% 95%;
+    --sidebar-accent-foreground: 250 45% 25%;
+    --sidebar-border: 245 30% 89%;
+    --sidebar-ring: 250 75% 55%;
+  }
+
+  .dark {
+    /* Vibrant indigo/purple theme — dark mode */
+    --background: 250 30% 8%;
+    --foreground: 245 25% 92%;
+    --card: 250 28% 12%;
+    --card-foreground: 245 25% 92%;
+    --popover: 250 28% 12%;
+    --popover-foreground: 245 25% 92%;
+    --primary: 255 55% 55%;
+    --primary-foreground: 250 30% 8%;
+    --secondary: 250 22% 18%;
+    --secondary-foreground: 245 25% 88%;
+    --muted: 250 22% 18%;
+    --muted-foreground: 245 15% 60%;
+    --accent: 270 75% 68%;
+    --accent-foreground: 250 30% 8%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 250 18% 34%;
+    --input: 250 18% 34%;
+    --ring: 255 80% 68%;
+    --sidebar-background: 250 30% 9%;
+    --sidebar-foreground: 245 25% 88%;
+    --sidebar-primary: 255 55% 55%;
+    --sidebar-primary-foreground: 250 30% 8%;
+    --sidebar-accent: 250 22% 18%;
+    --sidebar-accent-foreground: 245 25% 88%;
+    --sidebar-border: 250 20% 22%;
+    --sidebar-ring: 255 80% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  /* Sonner's own mobile stylesheet (@media max-width:600px) sets the
+     toaster to width:100% AND applies left/right offsets on top of that
+     100% — the offset pushes the box past the viewport edge instead of
+     being absorbed into it, overflowing narrow phones by roughly double
+     the offset. Capping the max-width here is a minimal, targeted fix that
+     doesn't fight Sonner's own positioning/animation logic. */
+  [data-sonner-toaster] {
+    max-width: calc(100vw - 32px) !important;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overscroll-behavior-y: none;
+    /* App-wide safety net: no matter what text ends up somewhere (a long
+       book title, a URL, a translated label, a name in a settings field),
+       it wraps instead of overflowing its container and running off-screen
+       or under something else. Elements that need a single line already set
+       whitespace: nowrap explicitly (buttons, pills, nav labels) — nowrap
+       always wins over overflow-wrap/hyphens, so this has no effect on
+       those and only helps normal-flow prose/labels. hyphens: auto is a
+       no-op without an explicit line-break opportunity too, so short button
+       text is unaffected; it only engages for a word that's genuinely too
+       wide for its line. */
+    overflow-wrap: break-word;
+    word-break: normal;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
+
+  button, a, nav, header {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Page transitions: native-like horizontal slide on every route change.
+     Forward navigation enters from the right; back navigation enters from
+     the left — mimicking a native mobile app's tab/stack transitions. */
+  .kjb-slide-forward {
+    animation: kjb-slide-in-right 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+  .kjb-slide-back {
+    animation: kjb-slide-in-left 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: opacity, transform;
+  }
+  @keyframes kjb-slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes kjb-slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kjb-slide-forward,
+    .kjb-slide-back {
+      animation: none;
+    }
+  }
+
+  /* Two-column reading layout (true to printed Bible) */
+  .kjb-two-col {
+    column-fill: balance;
+  }
+  /* Slightly smaller text + tighter spacing so two columns fit nicely on phones.
+     word-spacing: normal fixes the large gaps that text-justify causes in CSS columns */
+  .kjb-two-col {
+    font-size: 0.92em;
+    word-spacing: normal;
+    text-align: left;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    /* Safety net for any word hyphens can't find a break point for (browser
+       hyphenation dictionaries don't cover every word/name). Without this, an
+       unbreakable word that's wider than the column just overflows straight
+       through the column-rule divider instead of wrapping — worse than an
+       imperfect hyphen. */
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Verses are allowed to split across the column break (like a real
+     printed two-column Bible) so the browser can fill each column all the
+     way and hand overflow to the next — keeping every verse fully intact
+     in one column, however long, made a good balance impossible whenever a
+     chapter mixes short and long verses. The pilcrow (¶) mark itself is the
+     one exception: it must not be stranded alone at the bottom of a column
+     with the rest of its paragraph starting fresh in the next one. Since
+     this only pins one small inline glyph (not a whole verse), the browser
+     only has to shift by about a line to satisfy it — nowhere near the
+     dead-space cost of moving an entire verse. */
+  .kjb-two-col .pilcrow {
+    break-after: avoid;
+  }
+  /* Dancing Script's connected letterforms and swashes extend visibly past
+     their own layout box, so cursive mode gets extra column-gap (set inline)
+     for breathing room. Hyphenation itself stays on (see .kjb-two-col above)
+     — turning it off for cursive let long words that hyphenation would have
+     broken overflow straight past the column edge instead, which leaked
+     worse than the original swash overhang did. */
+  /* First verse of each column starts flush at the top (no leading gap),
+     so the left & right columns align at the same height */
+  .kjb-two-col > span:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Extension page mockups: show the screenshot matching the browser's color
+     scheme. The /extension page itself is always dark-themed, but the
+     screenshots depict the extension UI which adapts to the browser — so we
+     swap based on the OS/browser preference, not the app theme. */
+  .kjb-mockup-dark { display: none; }
+  .kjb-mockup-light { display: block; }
+  @media (prefers-color-scheme: dark) {
+    .kjb-mockup-dark { display: block; }
+    .kjb-mockup-light { display: none; }
+  }
+
+  /* The reader's sticky toolbar (top) and the fixed bottom nav / audio bar
+     overlap the scroll container. Without scroll-padding, scrollIntoView /
+     anchor scrolls land verses UNDER those bars — so the verse (or its
+     neighbours) gets partially clipped at the top or bottom. This reserves
+     space so any programmatic scroll leaves the verse fully visible. */
+  #kjb-scroll {
+    scroll-padding-top: 9rem;
+    scroll-padding-bottom: 6.5rem;
+  }
+
+  /* Hide scrollbar for horizontal scrolling nav */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide native scrollbars globally for a cleaner, native app appearance.
+     Scroll functionality is fully preserved — only the visual scrollbar is removed. */
+  html, body,
+  .overflow-auto, .overflow-y-auto, .overflow-x-auto, .overflow-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar,
+  .overflow-auto::-webkit-scrollbar, .overflow-y-auto::-webkit-scrollbar,
+  .overflow-x-auto::-webkit-scrollbar, .overflow-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  /* Pilcrow paragraph mark — black in light mode, white in dark mode, non-selectable, serif.
+     Force a serif font that always has the ¶ glyph, so accessibility fonts like
+     OpenDyslexic (which lack a pilcrow glyph) don't render it as a missing-glyph box. */
+  :root .pilcrow {
+    color: #000000;
+    opacity: 0.5;
+    font-style: normal;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .dark .pilcrow {
+    color: #ffffff;
+    opacity: 0.5;
+    font-style: normal;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* KJB italic text styling - [bracketed] words rendered as <em> */
+  em {
+    font-style: italic;
+  }
+  
+  /* In cursive mode ONLY, use Dancing Script font for scripture text.
+     Exclude UI chrome (buttons, sans-font elements, verse-number sups, icons).
+     Also exclude <em> so italic words can be styled separately below. */
+  .cursive-em-style,
+  .cursive-em-style *:not(button):not(button *):not(.font-sans):not(.font-sans *):not(sup):not(svg):not(svg *):not(em) {
+    font-family: 'Dancing Script', cursive !important;
+    font-weight: inherit !important;
+  }
+  
+  .cursive-em-style {
+    font-style: normal !important;
+    font-weight: 400 !important;
+    color: #1a1a1a !important;
+  }
+  .dark .cursive-em-style {
+    color: #e5e5e5 !important;
+  }
+  
+  /* Italic words ([bracketed]) in cursive mode.
+     Match the search-results look: same Dancing Script font, rendered italic and
+     in a lighter colour so they're visually distinct from surrounding text. */
+  .cursive-em-style em,
+  .cursive-em-style *:not(button) em {
+    font-family: 'Dancing Script', cursive !important;
+    font-style: italic !important;
+    font-weight: 400 !important;
+    color: #777 !important;
+  }
+  .dark .cursive-em-style em,
+  .dark .cursive-em-style *:not(button) em {
+    color: #c4c4c4 !important;
+  }
+
+  /* Daily verse card: keep the user-chosen text colour for the base text
+     (the card sits on a coloured/dark gradient), but still render the
+     [bracketed] italic words in a lighter shade, matching search/read. */
+  .kjb-verse-card.cursive-em-style {
+    color: inherit !important;
+  }
+  .kjb-verse-card.cursive-em-style em {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .kjb-colophon .pilcrow,
+  .kjb-subscript .pilcrow {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+
+  /* Colophon and subscript: surrounding text is upright (roman), but
+     [bracketed] words (rendered as <em>) remain italic. The pilcrow (¶)
+     prefix marks these as non-scripture metadata. In cursive mode the
+     .cursive-em-style em rule takes over, so we exclude it here. */
+  .kjb-colophon:not(.cursive-em-style) em,
+  .kjb-subscript:not(.cursive-em-style) em {
+    font-style: italic !important;
+  }
+
+  /* ── Reader reading-font ──
+     The reader sets data-reader-font on <html>; these rules apply the chosen
+     font to the scripture content (.kjb-reader-content) only — not UI chrome.
+     Verse numbers (sup) and explicit font-sans elements keep their own font.
+     Cursive is handled separately by .cursive-em-style, so it's excluded here. */
+  html[data-reader-font="serif"] .kjb-reader-content:not(.cursive-em-style),
+  html[data-reader-font="serif"] .kjb-reader-content:not(.cursive-em-style) *:not(sup):not(.font-sans):not(svg):not(svg *) {
+    font-family: 'Merriweather', 'Cormorant Garamond', Georgia, serif;
+  }
+  html[data-reader-font="sans-serif"] .kjb-reader-content:not(.cursive-em-style),
+  html[data-reader-font="sans-serif"] .kjb-reader-content:not(.cursive-em-style) *:not(sup):not(.font-sans):not(svg):not(svg *) {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  html[data-reader-font="monospace"] .kjb-reader-content:not(.cursive-em-style),
+  html[data-reader-font="monospace"] .kjb-reader-content:not(.cursive-em-style) *:not(sup):not(.font-sans):not(svg):not(svg *) {
+    font-family: 'Courier New', monospace;
+  }
+  html[data-reader-font="comic-sans"] .kjb-reader-content:not(.cursive-em-style),
+  html[data-reader-font="comic-sans"] .kjb-reader-content:not(.cursive-em-style) *:not(sup):not(.font-sans):not(svg):not(svg *) {
+    font-family: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', 'Comic Neue', system-ui, sans-serif;
+  }
+  html[data-reader-font="times"] .kjb-reader-content:not(.cursive-em-style),
+  html[data-reader-font="times"] .kjb-reader-content:not(.cursive-em-style) *:not(sup):not(.font-sans):not(svg):not(svg *) {
+    font-family: 'Times New Roman', Times, serif;
+  }
+
+  /* ── App-wide accessibility fonts ──
+     Applied via data attribute on <html>. Overrides every font across the app
+     (UI + scripture). Cursive scripture styling is intentionally left intact. */
+  html[data-a11y-font="dyslexic"] *:not(.cursive-em-style):not(.cursive-em-style *):not(.kjb-font-preview) {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  }
+  html[data-a11y-font="hyperlegible"] *:not(.cursive-em-style):not(.cursive-em-style *):not(.kjb-font-preview) {
+    font-family: 'Atkinson Hyperlegible', system-ui, sans-serif !important;
+  }
+  /* Atkinson Hyperlegible runs visually smaller — bump system-wide size up for legibility */
+  html[data-a11y-font="hyperlegible"] {
+    font-size: calc(112.5% * var(--kjb-zoom-scale, 1));
+  }
+  /* System: follow the device's own UI/reading font (incl. an OS-level
+     dyslexic font the user may have set). */
+  html[data-a11y-font="system"] *:not(.cursive-em-style):not(.cursive-em-style *):not(.kjb-font-preview) {
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+
+  /* Accessibility settings section: always render in OpenDyslexic so it's
+     easy to find regardless of the active app font. */
+  #kjb-accessibility-section,
+  #kjb-accessibility-section * {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  }
+
+
+  /* Render the pilcrow (¶) in OpenDyslexic in both accessibility font modes.
+     In hyperlegible mode (Atkinson, which lacks ¶) we force OpenDyslexic too so
+     the symbol is consistent. The extra :not() selectors raise specificity above
+     the broad a11y *:not() rule. */
+  html[data-a11y-font="dyslexic"] .pilcrow:not(.x):not(.y),
+  html[data-a11y-font="hyperlegible"] .pilcrow:not(.x):not(.y) {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  }
+
+  /* Drop cap — large decorative first letter on verse 1 of a chapter.
+     We wrap the first letter in an explicit <span class="kjb-dropcap-letter">
+     and float it, instead of relying on ::first-letter. This works in every
+     reading mode (line, paragraph, column) — including inline flow — and never
+     accidentally enlarges the verse number. */
+  /* The whole drop-cap unit (number + big letter) floats left together, so the
+     verse number always sits immediately to the LEFT of the drop cap in every
+     reading mode. */
+  .kjb-dropcap-group {
+    float: left;
+    display: flex;
+    align-items: flex-start;
+    padding-right: 0.14em;
+    /* No fixed height — the float clears to the natural height of the big
+       letter (~2 lines). A fixed `height: 2lh` over-reserved vertical space
+       when verse 1 was short (one line), creating an awkward gap before
+       verse 2. Letting it clear naturally removes that gap. */
+  }
+  .kjb-dropcap-letter {
+    /* Sized so the letter box spans exactly two body text lines
+       (2 × leading-relaxed 1.625 = 3.25em), making the drop cap's bottom
+       align flush with the top of the next verse down. Use em instead of the
+       poorly-supported `lh` unit so the cap renders at full size everywhere. */
+    font-size: 3.4em;
+    line-height: 1;
+    font-weight: 700;
+    color: inherit;
+    font-family: 'Cormorant Garamond', 'Merriweather', Georgia, serif;
+    /* Lift the box so its bottom lands exactly at the 2-line mark (3.25em),
+       while keeping the cap-top near line 1's cap-top. */
+    margin-top: -0.15em;
+  }
+  /* Verse number sits at the top-left of the group, beside the big letter. */
+  .kjb-dropcap-num {
+    font-size: 0.62em;
+    font-weight: 700;
+    line-height: 1;
+    margin-right: 0.18em;
+    margin-top: 0.1em;
+    color: hsl(var(--accent));
+    font-family: 'Inter', system-ui, sans-serif;
+    /* Never let a verse highlight background tint the verse number — the
+       highlight should cover the scripture text + drop-cap letter only. */
+    background-color: transparent !important;
+  }
+
+}
+
+  /* App buttons use a soft rounded corner (not hard squares, not full pills).
+     Lives in the utilities layer with :not() selectors so its specificity beats
+     the per-button `rounded-lg`/`rounded-md` utilities, while buttons that are
+     intentionally rounded-full or rounded-none keep their shape. */
+@layer utilities {
+  button:not(.rounded-full):not(.rounded-none) {
+    border-radius: 0.625rem;
+  }
+}
+
+/* Elements using backdrop-blur can lose their content (card shape stays but
+   icon/text vanish) after a global style recalc — e.g. the html font-size
+   changing when the Legible accessibility font is toggled — due to a
+   Chrome/Safari backdrop-filter repaint bug. Promoting them to their own GPU
+   layer prevents this. */
+.backdrop-blur-xl, .backdrop-blur-md, .backdrop-blur-sm {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+  body {
+    margin: 0 !important;
+  }
+  html, body, #root, .h-screen, .min-h-screen {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+  main, #kjb-scroll, .overflow-y-auto, .overflow-x-hidden, .overflow-hidden, .flex-1, .flex-col {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+  /* Avoid breaking verses inside if possible, but allow natural flow */
+  h1, h2, h3, h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .kjb-reader-content {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  /* Prevent verses from being cut in half across pages */
+  *[id^="v"], .kjb-verse-container, blockquote, p {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Prevent layout jumps when printing the UI */
+  .fixed, .sticky {
+    position: static !important;
+  }
+}

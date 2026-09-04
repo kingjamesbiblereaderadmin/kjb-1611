@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches drawable-night/splash.png's background. -->
+    <color name="splashBackground">#100E1B</color>
+</resources>

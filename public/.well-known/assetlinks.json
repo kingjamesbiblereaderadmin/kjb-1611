@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kingjamesbiblereader.twa",
+      "sha256_cert_fingerprints": [
+        "3F:72:50:51:22:8F:77:43:15:D4:28:73:C6:C3:CF:56:A2:24:60:7D:F1:85:D5:6B:03:6A:6E:3F:2F:84:12:9A"
+      ]
+    }
+  }
+]

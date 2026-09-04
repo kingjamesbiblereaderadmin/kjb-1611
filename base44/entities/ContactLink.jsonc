@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string"
+    },
+    "handle": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "platform",
+    "handle",
+    "url"
+  ],
+  "name": "ContactLink"
+}

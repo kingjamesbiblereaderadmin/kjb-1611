@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>KJB Reader — Offline</title>
+    <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a05d76723afe58d80c589e8/8e738d108_cfb4bf781_Untitled.png" />
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0f1117;
+        color: #c8cdd8;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      .wrap {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      img {
+        width: 160px;
+        height: 160px;
+        object-fit: contain;
+        border-radius: 24px;
+        margin-bottom: 40px;
+      }
+      h1 {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        margin: 0 0 12px;
+        color: #e6e9f0;
+      }
+      p {
+        font-size: 14px;
+        font-weight: 300;
+        line-height: 1.6;
+        margin: 0 0 28px;
+        max-width: 320px;
+        color: #9aa1b2;
+      }
+      button {
+        background: #4f6aff;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button:active { opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <img
+        src="https://media.base44.com/images/public/6a05d76723afe58d80c589e8/8e738d108_cfb4bf781_Untitled.png"
+        alt="KJB Reader Logo"
+      />
+      <h1>You're Offline</h1>
+      <p>This page isn't available without a connection. Please reconnect to the internet and try again.</p>
+      <button onclick="location.reload()">Retry</button>
+    </div>
+  </body>
+</html>

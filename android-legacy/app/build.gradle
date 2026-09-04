@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+android {
+    namespace 'kjbreader.app'
+    compileSdk 36
+    defaultConfig {
+        applicationId "kjbreader.app"
+        minSdk 24
+        targetSdk 36
+        versionCode 5
+        versionName "1.0.2"
+    }
+    signingConfigs {
+        release {
+            // Populated from env vars set by CI (see build-android.yml). A real,
+            // persistent keystore — NOT regenerated per build — is required so every
+            // release carries the same signing identity; Play Store rejects updates
+            // signed with a different key than the first upload.
+            def ksPath = System.getenv('ANDROID_KEYSTORE_PATH')
+            if (ksPath != null) {
+                storeFile file(ksPath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // Signing handled here via signingConfigs.release, populated from CI
+            // secrets, so both `assembleRelease` (APK) and `bundleRelease` (AAB)
+            // come out already signed with the persistent release key.
+            signingConfig signingConfigs.release
+            // Keep R8/minify OFF — no proguard rules are shipped, so shrinking would
+            // strip WebView classes and an unsigned/broken build fails to install.
+            minifyEnabled false
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    kotlinOptions { jvmTarget = '17' }
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.webkit:webkit:1.10.0'
+}

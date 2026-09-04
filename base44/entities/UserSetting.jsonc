@@ -1,0 +1,28 @@
+{
+  "name": "UserSetting",
+  "type": "object",
+  "properties": {
+    "settings": {
+      "type": "object",
+      "description": "JSON blob of all user settings (theme, fonts, colors, etc.)",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "settings"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

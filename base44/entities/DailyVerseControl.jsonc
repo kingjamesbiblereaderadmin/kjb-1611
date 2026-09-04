@@ -1,0 +1,49 @@
+{
+  "name": "DailyVerseControl",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "exclusion",
+        "pin"
+      ],
+      "description": "'exclusion' hides a verse from ever being picked; 'pin' forces a specific verse on a specific date"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Full verse reference, e.g. 'Psalms 23:1' (book chapter:verse)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "For 'pin' only: the local date (YYYY-MM-DD) this verse is forced on"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note describing why"
+    }
+  },
+  "required": [
+    "kind",
+    "ref"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "name": "ExtensionConfig",
+  "type": "object",
+  "properties": {
+    "chrome": {
+      "type": "string",
+      "description": "Chrome download (.zip) URL shown on /extension"
+    },
+    "edge": {
+      "type": "string",
+      "description": "Microsoft Edge Add-ons store URL shown on /extension"
+    },
+    "firefox": {
+      "type": "string",
+      "description": "Firefox download (.zip) URL shown on /extension"
+    },
+    "opera": {
+      "type": "string",
+      "description": "Opera download (.zip) URL shown on /extension"
+    },
+    "version": {
+      "type": "string",
+      "description": "Extension version label, e.g. 'v0.4.79'"
+    },
+    "show_instructions": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to show the Installation Instructions section on /extension"
+    },
+    "hero_icon": {
+      "type": "string",
+      "description": "Hero icon image URL shown at the top of /extension"
+    },
+    "mockups": {
+      "type": "array",
+      "description": "Sidebar preview mockup images shown in the 'See It In Action' section on /extension",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 12+ (API 31+) has its own native SplashScreen system that
+         does NOT read the classic android:background attribute set in the
+         base values/styles.xml: without windowSplashScreenBackground and
+         windowSplashScreenAnimatedIcon specifically, the OS silently shows
+         its own default splash (just the adaptive icon on a plain color),
+         ignoring our custom drawable/splash.png bitmap entirely. This is
+         why the logo appeared to be "missing": the bitmap splash approach
+         only ever worked correctly on API less than 31.
+
+         ic_launcher_foreground is reused for the icon since it's already
+         the properly composed, correctly padded (adaptive icon safe zone)
+         KJB Reader logo: same artwork as the app icon and the bitmap
+         splash, just via the icon sized API this version of Android
+         actually requires instead of a full screen background image. -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/splashBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

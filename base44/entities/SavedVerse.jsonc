@@ -1,0 +1,52 @@
+{
+  "name": "SavedVerse",
+  "type": "object",
+  "properties": {
+    "abbr": {
+      "type": "string",
+      "description": "Book abbreviation (e.g. 'gen', 'joh')"
+    },
+    "chapter": {
+      "type": "integer",
+      "description": "Chapter number"
+    },
+    "verse": {
+      "type": "integer",
+      "description": "Verse number"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Full reference, e.g. 'John 3:16'"
+    },
+    "text": {
+      "type": "string",
+      "description": "Verse text (KJB)"
+    },
+    "folder": {
+      "type": "string",
+      "default": "Favorites",
+      "description": "Folder name this verse is organized under"
+    }
+  },
+  "required": [
+    "abbr",
+    "chapter",
+    "verse",
+    "ref",
+    "text"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

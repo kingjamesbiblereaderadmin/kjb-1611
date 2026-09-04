@@ -1,0 +1,50 @@
+{
+  "name": "BibleTextOverride",
+  "type": "object",
+  "properties": {
+    "book": {
+      "type": "string",
+      "description": "Full book name (e.g. 'Genesis', '1 Samuel')"
+    },
+    "chapter": {
+      "type": "integer",
+      "description": "Chapter number"
+    },
+    "verse": {
+      "type": "integer",
+      "description": "Verse number"
+    },
+    "text": {
+      "type": "string",
+      "description": "Corrected verse text (KJB format, [brackets] for italics)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note describing what was fixed"
+    }
+  },
+  "required": [
+    "book",
+    "chapter",
+    "verse",
+    "text"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "id": "/",
+  "name": "KJB Reader",
+  "short_name": "KJB Reader",
+  "description": "Read the King James Bible (Pure Cambridge Edition) with offline support, daily verses, and beautiful typography.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "orientation": "any",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    { "protocol": "bible", "url": "/read?ref=%s", "name": "KJB Reader" },
+    { "protocol": "kjb", "url": "/read?ref=%s", "name": "KJB Reader" }
+  ],
+  "icons": [
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/23dcc4982_kjb-icon192-v20260713.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/c2459f3df_kjb-icon512-v20260713.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/94863d510_kjb-maskable512-v20260713.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/4222aa582_screenshot-BCOf0297029-2e38-446b-bd58-076244d9d764.png",
+      "sizes": "1024x1707",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Screenshot 1"
+    },
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/9c0bd6152_screenshot-BCObc7bb469-f8ce-4d13-b0bd-1d6f9d4206f1.png",
+      "sizes": "1024x1707",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Screenshot 2"
+    },
+    {
+      "src": "https://base44.app/api/apps/6a05d76723afe58d80c589e8/files/mp/public/6a05d76723afe58d80c589e8/e8088dc25_screenshot-BCOf0297029-2e38-446b-bd58-076244d9d764.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Screenshot 3"
+    }
+  ]
+}

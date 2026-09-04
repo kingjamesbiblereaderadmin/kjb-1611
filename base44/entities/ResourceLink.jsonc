@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "external": {
+      "type": "boolean"
+    },
+    "category": {
+      "type": "string"
+    },
+    "badge": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "url"
+  ],
+  "name": "ResourceLink"
+}
