@@ -32,20 +32,17 @@ const scrollMainToTop = () => {
 // Per-route colours so icons are colourful everywhere (menu, bottom nav, footer).
 // `gradient` = icon-chip background; `text` = inactive icon colour.
 const NAV_COLORS = {
-  '/':      { gradient: 'from-blue-500 to-indigo-600',   text: 'text-blue-500' },
-  '/1611':  { gradient: 'from-amber-700 to-yellow-800',  text: 'text-amber-700' },
+  '/read':  { gradient: 'from-amber-700 to-yellow-800',  text: 'text-amber-700' },
   '/about': { gradient: 'from-sky-500 to-cyan-600',      text: 'text-sky-500' },
 };
 
 const NAV_ITEMS = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/1611', icon: ScrollText, label: '1611 Original' },
+  { path: '/read', icon: ScrollText, label: '1611 Original' },
   { path: '/about', icon: Info, label: 'About' },
 ];
 
 const BOTTOM_NAV_PRIMARY = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/1611', icon: ScrollText, label: '1611 Original' },
+  { path: '/read', icon: ScrollText, label: '1611 Original' },
 ];
 
 const BOTTOM_NAV_SECONDARY = [
