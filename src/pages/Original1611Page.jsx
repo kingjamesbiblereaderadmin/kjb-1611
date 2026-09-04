@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import * as pdfjsLib from 'pdfjs-dist';
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 import { base44 } from '@/api/base44Client';
 import { useHeaderHide } from '@/lib/HeaderHideContext';
 import { Button } from '@/components/ui/button';
@@ -12,26 +14,7 @@ import {
   Loader2, ZoomIn, ZoomOut, X, Download, BookOpen,
 } from 'lucide-react';
 
-// pdfjs-dist ships ESM-only worker/library builds. Bundling them through Vite
-// means Base44's static asset host serves the .mjs chunk as
-// application/octet-stream (not a JS MIME type), which browsers reject for
-// dynamic module imports ("Setting up fake worker failed: Failed to fetch
-// dynamically imported module"). Loading pdf.js from cdnjs instead sidesteps
-// that entirely -- it serves the exact same version with correct
-// `application/javascript` headers and CORS enabled. Cached as a
-// module-level promise so it's only fetched once per session.
-const PDFJS_VERSION = '4.10.38'; // must match the pdfjs-dist devDependency version
-const PDFJS_BASE = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}`;
-let _pdfjsPromise = null;
-function loadPdfjs() {
-  if (!_pdfjsPromise) {
-    _pdfjsPromise = import(/* @vite-ignore */ `${PDFJS_BASE}/pdf.min.mjs`).then((mod) => {
-      mod.GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/pdf.worker.min.mjs`;
-      return mod;
-    });
-  }
-  return _pdfjsPromise;
-}
+pdfjsLib.GlobalWorkerOptions.workerPort = new PdfWorker();
 
 const FALLBACK_TOTAL_PAGES = 1506;
 const MIN_SCALE = 0.6;
@@ -116,10 +99,7 @@ export default function Original1611Page() {
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || 'Failed to load the PDF.');
       });
-    return () => {
-      cancelled = true;
-      try { task.destroy(); } catch { /* noop */ }
-    };
+    return () => { cancelled = true; };
   }, [pdfUrl]);
 
   const clampPage = useCallback(
