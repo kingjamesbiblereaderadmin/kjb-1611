@@ -502,82 +502,9 @@ export default function AppLayout() {
 
       <ProgressBar />
 
-      <DesktopFooter navigate={navigate} setMenuOpen={setMenuOpen} />
-
       {showShortcuts && <ShortcutsModal onClose={() => setShowShortcuts(false)} />}
     </div>
     </AutoUpdateHandler>
-  );
-}
-
-function DesktopFooter({ navigate, setMenuOpen }) {
-  const [open, setOpen] = useState(() => {
-    try { return localStorage.getItem('kjb-desktop-footer-open') !== 'false'; } catch { return true; }
-  });
-  const toggle = () => {
-    setOpen(o => {
-      const next = !o;
-      try { localStorage.setItem('kjb-desktop-footer-open', String(next)); } catch {}
-      return next;
-    });
-  };
-  return (
-      <footer className={`print:hidden hidden sm:block border-t border-border/60 bg-card/70 backdrop-blur-xl flex-shrink-0 ${open ? 'py-3' : 'py-0.5'}`}>
-        <div className="w-full max-w-[120rem] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className={`flex justify-center ${open ? 'mb-2' : 'mb-0'}`}>
-            <button
-              onClick={toggle}
-              className={`flex items-center gap-1.5 px-3 rounded-lg font-sans text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors ${open ? 'py-1' : 'py-0.5'}`}
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? '' : 'rotate-180'}`} />
-            </button>
-          </div>
-          {open && (
-          <>
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-3">
-            {NAV_ITEMS.map(item => {
-              const Icon = item.icon;
-              const colors = NAV_COLORS[item.path] || NAV_COLORS['/'];
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    scrollMainToTop();
-                    navigate(item.path);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-sans text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
-                >
-                  <Icon className={`w-3.5 h-3.5 transition-transform duration-200 ${colors.text}`} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-          <p className="text-center font-sans text-xs text-muted-foreground">
-            Bible text from{' '}
-            <a href="https://bibleprotector.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
-              bibleprotector.com
-            </a>
-            {' '}· Created with{' '}
-            <a href="https://base44.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
-              Base44
-            </a>
-          </p>
-          <p className="text-center font-sans text-xs text-muted-foreground mt-1">
-            <Link to="/privacy" className="hover:text-foreground hover:underline transition-colors">Privacy</Link>
-            {' · '}
-            <Link to="/terms" className="hover:text-foreground hover:underline transition-colors">Terms</Link>
-            {' · '}
-            <Link to="/extension/change-log" className="hover:text-foreground hover:underline transition-colors">Changelog</Link>
-            {' · '}
-            <Link to="/contact" className="hover:text-foreground hover:underline transition-colors">Contact</Link>
-          </p>
-          </>
-          )}
-        </div>
-      </footer>
   );
 }
 
