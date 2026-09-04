@@ -1,0 +1,29 @@
+{
+  "name": "Original1611Config",
+  "properties": {
+    "pdf_url": {
+      "description": "Public URL to the 1611 KJB facsimile PDF (scanned pages with OCR text layer), uploaded via the Base44 file manager",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "type": "object"
+}
