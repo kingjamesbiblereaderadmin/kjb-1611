@@ -52,6 +52,7 @@ const loaders = {
   Spanish: () => import('@/pages/SpanishResourcesPage.jsx').catch((err) => { console.error('Failed to load SpanishResourcesPage:', err); throw err; }),
   SpanishGospel: () => import('@/pages/SpanishGospelPage.jsx').catch((err) => { console.error('Failed to load SpanishGospelPage:', err); throw err; }),
   Changelog: () => import('@/pages/ChangelogPage').catch((err) => { console.error('Failed to load ChangelogPage:', err); throw err; }),
+  Original1611: () => import('@/pages/Original1611Page.jsx').catch((err) => { console.error('Failed to load Original1611Page:', err); throw err; }),
 
 };
 const HomePage = lazy(loaders.Home);
@@ -90,6 +91,7 @@ const CreditsPage = lazy(loaders.Credits);
 const SpanishResourcesPage = lazy(loaders.Spanish);
 const SpanishGospelPage = lazy(loaders.SpanishGospel);
 const ChangelogPage = lazy(loaders.Changelog);
+const Original1611Page = lazy(loaders.Original1611);
 
 
 const getLoaderForPath = (pathname) => {
@@ -103,6 +105,7 @@ const getLoaderForPath = (pathname) => {
   if (pathname === '/search') return loaders.Search;
   if (pathname === '/saved') return loaders.Saved;
   if (pathname === '/refresh-cache') return loaders.RefreshCache;
+  if (pathname === '/1611') return loaders.Original1611;
   return null;
 };
 
@@ -328,6 +331,7 @@ const AuthenticatedApp = () => {
               <Route path="/legacy" element={<Suspense fallback={<RouteLoader />}><FadeIn><LegacyReader /></FadeIn></Suspense>} />
               <Route path="/dev-tools" element={<Suspense fallback={<RouteLoader />}><FadeIn><DevToolsPage /></FadeIn></Suspense>} />
               <Route path="/espanol" element={<Suspense fallback={<RouteLoader />}><FadeIn><SpanishResourcesPage /></FadeIn></Suspense>} />
+              <Route path="/1611" element={<Suspense fallback={<RouteLoader />}><Original1611Page /></Suspense>} />
             </Route>
             <Route path="/bible.txt" element={<Suspense fallback={null}><BibleTxt /></Suspense>} />
             <Route path="*" element={<PageNotFound />} />
