@@ -376,10 +376,9 @@ export default function AppLayout() {
             </div>
           )}
 
-          {/* Search - expands to fill all available space so icons sit flush right */}
-          <div className="flex-1 min-w-0 pointer-events-auto">
-            <BibleSearchBar onClose={() => setMenuOpen(false)} />
-          </div>
+          {/* Verse search removed with the full Reader/Search pages it pointed to;
+              spacer kept so the remaining icons still sit flush right. */}
+          <div className="flex-1 min-w-0 pointer-events-auto" />
 
           {/* Actions - responsive button sizes with visible square touch targets */}
           <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-3 shrink-0">
