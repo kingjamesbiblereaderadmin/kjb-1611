@@ -329,48 +329,35 @@ export default function AppLayout() {
     <div data-kjb-app-root className="h-[100dvh] bg-gradient-to-br from-background via-accent/5 to-background flex flex-col overflow-hidden">
       <header data-kjb-app-header className={`print:hidden border-b border-border/60 bg-card/70 backdrop-blur-xl z-50 flex-shrink-0 ${hideHeader ? 'hidden' : ''}`} style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}>
         <div className="w-full max-w-[120rem] mx-auto px-3 xs:px-5 sm:px-8 lg:px-12 h-14 flex items-center gap-1.5 xs:gap-2 sm:gap-3">
-          {/* Logo / Back Button */}
-          {pathname === '/' ? (
+          {/* Back + link to the reader. This layout only ever wraps /about now
+              (the reader itself is a standalone route), so there's no "home"
+              state to branch on here anymore. */}
+          <div className="flex items-center -ml-3 flex-shrink-0 pointer-events-auto">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                goBack();
+              }}
+              className="flex items-center gap-1 pl-2 pr-2 sm:pr-3 h-12 rounded-xl hover:bg-secondary/50 active:bg-secondary transition-colors text-foreground touch-manipulation cursor-pointer"
+              title="Back"
+            >
+              <ChevronLeft className="w-6 h-6 pointer-events-none" />
+              <span className="font-sans text-sm font-medium hidden sm:inline pointer-events-none">Back</span>
+            </button>
             <Link
-              to="/"
+              to="/read"
               onClick={() => {
                 setMenuOpen(false);
                 scrollMainToTop();
               }}
-              className="flex items-center gap-2 flex-shrink-0 pointer-events-auto"
+              className="flex items-center justify-center w-10 h-12 rounded-xl hover:bg-secondary/50 active:bg-secondary transition-colors text-foreground touch-manipulation cursor-pointer"
+              title="1611 Original"
             >
-              <div className="flex items-center gap-1.5">
-                <img src="https://media.base44.com/images/public/6a05d76723afe58d80c589e8/2279e016e_8e738d108_cfb4bf781_Untitled.png" alt="KJB Reader" className="h-8 w-auto" />
-              </div>
+              <ScrollText className="w-5 h-5 pointer-events-none text-muted-foreground hover:text-foreground transition-colors" />
             </Link>
-          ) : (
-            <div className="flex items-center -ml-3 flex-shrink-0 pointer-events-auto">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  goBack();
-                }}
-                className="flex items-center gap-1 pl-2 pr-2 sm:pr-3 h-12 rounded-xl hover:bg-secondary/50 active:bg-secondary transition-colors text-foreground touch-manipulation cursor-pointer"
-                title="Back"
-              >
-                <ChevronLeft className="w-6 h-6 pointer-events-none" />
-                <span className="font-sans text-sm font-medium hidden sm:inline pointer-events-none">Back</span>
-              </button>
-              <Link
-                to="/"
-                onClick={() => {
-                  setMenuOpen(false);
-                  scrollMainToTop();
-                }}
-                className="flex items-center justify-center w-10 h-12 rounded-xl hover:bg-secondary/50 active:bg-secondary transition-colors text-foreground touch-manipulation cursor-pointer"
-                title="Home"
-              >
-                <Home className="w-5 h-5 pointer-events-none text-muted-foreground hover:text-foreground transition-colors" />
-              </Link>
-            </div>
-          )}
+          </div>
 
           {/* Verse search removed with the full Reader/Search pages it pointed to;
               spacer kept so the remaining icons still sit flush right. */}
