@@ -33,39 +33,24 @@ const scrollMainToTop = () => {
 // Per-route colours so icons are colourful everywhere (menu, bottom nav, footer).
 // `gradient` = icon-chip background; `text` = inactive icon colour.
 const NAV_COLORS = {
-  '/':          { gradient: 'from-blue-500 to-indigo-600',    text: 'text-blue-500' },
-  '/contents':  { gradient: 'from-amber-500 to-orange-600',   text: 'text-amber-500' },
-  '/read':      { gradient: 'from-emerald-500 to-teal-600',   text: 'text-emerald-500' },
-  '/gospel':    { gradient: 'from-rose-500 to-pink-600',      text: 'text-rose-500' },
-  '/resources': { gradient: 'from-violet-500 to-purple-600',  text: 'text-violet-500' },
-  '/saved':     { gradient: 'from-fuchsia-500 to-pink-600',   text: 'text-fuchsia-500' },
-  '/about':     { gradient: 'from-sky-500 to-cyan-600',       text: 'text-sky-500' },
-  '/settings':  { gradient: 'from-slate-500 to-slate-700',    text: 'text-slate-500' },
+  '/':      { gradient: 'from-blue-500 to-indigo-600',   text: 'text-blue-500' },
+  '/1611':  { gradient: 'from-amber-700 to-yellow-800',  text: 'text-amber-700' },
+  '/about': { gradient: 'from-sky-500 to-cyan-600',      text: 'text-sky-500' },
 };
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
-  { path: '/contents', icon: List, label: 'Contents' },
-  { path: '/read', icon: BookOpen, label: 'Read' },
-  { path: '/gospel', icon: Heart, label: 'Gospel' },
-  { path: '/resources', icon: Library, label: 'Resources' },
-  { path: '/saved', icon: Bookmark, label: 'Saved' },
+  { path: '/1611', icon: ScrollText, label: '1611 Original' },
   { path: '/about', icon: Info, label: 'About' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const BOTTOM_NAV_PRIMARY = [
   { path: '/', icon: Home, label: 'Home' },
-  { path: '/contents', icon: List, label: 'Contents' },
-  { path: '/read', icon: BookOpen, label: 'Read' },
-  { path: '/gospel', icon: Heart, label: 'Gospel' },
+  { path: '/1611', icon: ScrollText, label: '1611 Original' },
 ];
 
 const BOTTOM_NAV_SECONDARY = [
-  { path: '/resources', icon: Library, label: 'Resources' },
-  { path: '/saved', icon: Bookmark, label: 'Saved' },
   { path: '/about', icon: Info, label: 'About' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function AppLayout() {
