@@ -69,6 +69,7 @@ export default function Original1611Page() {
   const [searching, setSearching] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
   const [highlightTerm, setHighlightTerm] = useState('');
+  const [highlightChapter, setHighlightChapter] = useState(false);
 
   const canvasRef = useRef(null);
   const textLayerRef = useRef(null);
@@ -142,6 +143,16 @@ export default function Original1611Page() {
   // Jumping to a search result also highlights that match on the page.
   const goToSearchResult = useCallback((p, term) => {
     setHighlightTerm(term);
+    setHighlightChapter(false);
+    scrollToHighlightRef.current = true;
+    goToPage(p);
+  }, [goToPage]);
+
+  // Jumping to a book/chapter from Contents highlights the chapter heading
+  // ('CHAP.'/'PSALME' marker) on the page it lands on, so it's easy to spot.
+  const goToChapter = useCallback((p) => {
+    setHighlightTerm('');
+    setHighlightChapter(true);
     scrollToHighlightRef.current = true;
     goToPage(p);
   }, [goToPage]);
@@ -212,11 +223,21 @@ export default function Original1611Page() {
             if (foldedHighlight && fold(item.str).includes(foldedHighlight)) {
               span.className = 'pdf-search-hit';
               if (!firstMatchSpan) firstMatchSpan = span;
+            } else if (highlightChapter && !firstMatchSpan) {
+              // This 1611 print marks a new chapter with a "CHAP." heading (or
+              // "PSALME" within Psalms) near the top of its first page -- find
+              // and highlight that marker so it's obvious where the chapter starts.
+              const bare = item.str.replace(/[^A-Za-z]/g, '').toLowerCase();
+              if (bare === 'chap' || bare === 'psalme') {
+                span.className = 'pdf-search-hit';
+                firstMatchSpan = span;
+              }
             }
             layerDiv.appendChild(span);
           }
           if (scrollToHighlightRef.current && firstMatchSpan) {
             scrollToHighlightRef.current = false;
+            setHighlightChapter(false);
             requestAnimationFrame(() => {
               firstMatchSpan.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
             });
@@ -231,7 +252,7 @@ export default function Original1611Page() {
       }
     })();
     return () => { cancelled = true; };
-  }, [pdfDoc, pageNum, scale, clampPage, highlightTerm]);
+  }, [pdfDoc, pageNum, scale, clampPage, highlightTerm, highlightChapter]);
 
   // Keyboard paging
   useEffect(() => {
@@ -327,7 +348,7 @@ export default function Original1611Page() {
 
         <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
           <span className="text-sm text-neutral-400 truncate hidden sm:inline">
-            {bookForPage ? bookForPage.book : '1611 King James Bible'}
+            {bookForPage ? bookForPage.short_name : '1611 King James Bible'}
           </span>
         </div>
 
@@ -424,14 +445,14 @@ export default function Original1611Page() {
                           {b.chapters.length > 1 ? b.chapters.map((c) => (
                             <button
                               key={c.chapter}
-                              onClick={() => goToPage(c.page + 1)}
+                              onClick={() => goToChapter(c.page + 1)}
                               className="text-xs rounded bg-white/5 hover:bg-white/15 py-1.5"
                             >
                               {c.chapter}
                             </button>
                           )) : (
                             <button
-                              onClick={() => goToPage(b.start_page + 1)}
+                              onClick={() => goToChapter(b.start_page + 1)}
                               className="col-span-6 text-xs rounded bg-white/5 hover:bg-white/15 py-1.5 text-left px-2"
                             >
                               Go to {b.book}
