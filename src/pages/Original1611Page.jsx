@@ -68,12 +68,14 @@ export default function Original1611Page() {
   const [searchResults, setSearchResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
+  const [highlightTerm, setHighlightTerm] = useState('');
 
   const canvasRef = useRef(null);
   const textLayerRef = useRef(null);
   const renderTaskRef = useRef(null);
   const pageTextCache = useRef(new Map());
   const searchTokenRef = useRef(0);
+  const scrollToHighlightRef = useRef(false);
 
   useEffect(() => {
     setHideHeader(true);
@@ -137,6 +139,13 @@ export default function Original1611Page() {
     setSidebarOpen(false);
   }, [clampPage]);
 
+  // Jumping to a search result also highlights that match on the page.
+  const goToSearchResult = useCallback((p, term) => {
+    setHighlightTerm(term);
+    scrollToHighlightRef.current = true;
+    goToPage(p);
+  }, [goToPage]);
+
   // Keep ?page= in the URL in sync (shareable / refresh-safe)
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -179,6 +188,8 @@ export default function Original1611Page() {
           layerDiv.style.width = `${viewport.width}px`;
           layerDiv.style.height = `${viewport.height}px`;
           const [vA, vB, vC, vD, vE, vF] = viewport.transform;
+          const foldedHighlight = highlightTerm ? fold(highlightTerm) : '';
+          let firstMatchSpan = null;
           for (const item of textContent.items) {
             if (!item.str) continue;
             const m = item.transform;
@@ -198,7 +209,17 @@ export default function Original1611Page() {
             span.style.top = `${tx[5] - fontHeight}px`;
             span.style.fontSize = `${fontHeight}px`;
             if (angle) span.style.transform = `rotate(${angle}rad)`;
+            if (foldedHighlight && fold(item.str).includes(foldedHighlight)) {
+              span.className = 'pdf-search-hit';
+              if (!firstMatchSpan) firstMatchSpan = span;
+            }
             layerDiv.appendChild(span);
+          }
+          if (scrollToHighlightRef.current && firstMatchSpan) {
+            scrollToHighlightRef.current = false;
+            requestAnimationFrame(() => {
+              firstMatchSpan.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+            });
           }
         }
       } catch (err) {
@@ -210,7 +231,7 @@ export default function Original1611Page() {
       }
     })();
     return () => { cancelled = true; };
-  }, [pdfDoc, pageNum, scale, clampPage]);
+  }, [pdfDoc, pageNum, scale, clampPage, highlightTerm]);
 
   // Keyboard paging
   useEffect(() => {
@@ -458,7 +479,7 @@ export default function Original1611Page() {
                   {(searchResults || []).map((r, i) => (
                     <button
                       key={`${r.page}-${i}`}
-                      onClick={() => goToPage(r.page)}
+                      onClick={() => goToSearchResult(r.page, query)}
                       className="w-full text-left px-4 py-2.5 hover:bg-white/5 border-b border-white/5"
                     >
                       <div className="text-xs text-primary mb-1">Page {r.page}</div>
@@ -490,6 +511,11 @@ export default function Original1611Page() {
         }
         .pdf-text-layer ::selection {
           background: rgba(80, 140, 255, 0.4);
+        }
+        .pdf-text-layer span.pdf-search-hit {
+          color: transparent;
+          background: rgba(255, 230, 0, 0.55);
+          border-radius: 2px;
         }
       `}</style>
     </div>
