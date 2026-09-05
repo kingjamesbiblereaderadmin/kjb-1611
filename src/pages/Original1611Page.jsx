@@ -627,7 +627,23 @@ export default function Original1611Page() {
               <ScrollArea className="h-full">
                 <div className="py-2">
                   {toc.map((b) => (
-                    <div key={b.book} className="border-b border-white/5">
+                    <React.Fragment key={b.book}>
+                      {b.short_name === 'Genesis' && (
+                        <div className="px-4 py-2 text-xs font-semibold tracking-wide text-neutral-400 bg-white/5">
+                          OLD TESTAMENT
+                        </div>
+                      )}
+                      {b.short_name === 'Apocrypha' && (
+                        <div className="px-4 py-2 text-xs font-semibold tracking-wide text-neutral-400 bg-white/5">
+                          APOCRYPHA
+                        </div>
+                      )}
+                      {b.short_name === 'Matthew' && (
+                        <div className="px-4 py-2 text-xs font-semibold tracking-wide text-neutral-400 bg-white/5">
+                          NEW TESTAMENT
+                        </div>
+                      )}
+                      <div className="border-b border-white/5">
                       <button
                         className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-white/5 text-sm"
                         onClick={() => setOpenBook(openBook === b.book ? null : b.book)}
@@ -657,7 +673,8 @@ export default function Original1611Page() {
                           )}
                         </div>
                       )}
-                    </div>
+                      </div>
+                    </React.Fragment>
                   ))}
                 </div>
               </ScrollArea>
