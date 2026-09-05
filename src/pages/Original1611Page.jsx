@@ -170,11 +170,17 @@ export default function Original1611Page() {
   const [searchProgress, setSearchProgress] = useState(0);
   const [highlightTerm, setHighlightTerm] = useState('');
   const [highlightChapter, setHighlightChapter] = useState(false);
+  const [highlightVerse, setHighlightVerse] = useState(null);
+
+  const [refInput, setRefInput] = useState('');
+  const [refError, setRefError] = useState('');
+  const [refBusy, setRefBusy] = useState(false);
 
   const canvasRef = useRef(null);
   const textLayerRef = useRef(null);
   const renderTaskRef = useRef(null);
   const pageTextCache = useRef(new Map());
+  const pageItemsCache = useRef(new Map());
   const searchTokenRef = useRef(0);
   const scrollToHighlightRef = useRef(false);
 
@@ -252,10 +258,74 @@ export default function Original1611Page() {
   // ('CHAP.'/'PSALME' marker) on the page it lands on, so it's easy to spot.
   const goToChapter = useCallback((p) => {
     setHighlightTerm('');
+    setHighlightVerse(null);
     setHighlightChapter(true);
     scrollToHighlightRef.current = true;
     goToPage(p);
   }, [goToPage]);
+
+  const getPageItems = useCallback(async (idx) => {
+    if (pageItemsCache.current.has(idx)) return pageItemsCache.current.get(idx);
+    const page = await pdfDoc.getPage(idx);
+    const tc = await page.getTextContent();
+    pageItemsCache.current.set(idx, tc.items);
+    return tc.items;
+  }, [pdfDoc]);
+
+  // Scans forward from a chapter's first page (up to the next chapter's page,
+  // or 8 pages, whichever is sooner) for a text item that's just the bare
+  // verse number -- this print sets each verse's number as its own token
+  // right before the verse text, so this is a reasonable way to locate it
+  // without any pre-built verse index.
+  const findVersePage = useCallback(async (chapterPdfPage, upperBoundPdfPage, verseNum) => {
+    const maxPage = Math.min(upperBoundPdfPage, chapterPdfPage + 8, numPages || FALLBACK_TOTAL_PAGES);
+    for (let p = chapterPdfPage; p <= maxPage; p++) {
+      const items = await getPageItems(p);
+      for (const item of items) {
+        const m = item.str.trim().match(/^(\d{1,3})[.:]?$/);
+        if (m && parseInt(m[1], 10) === verseNum) return p;
+      }
+    }
+    return chapterPdfPage;
+  }, [getPageItems, numPages]);
+
+  const goToReference = useCallback(async (raw) => {
+    const tocShortNames = toc.map((b) => b.short_name);
+    const parsed = parseReference(raw, tocShortNames);
+    if (!parsed) {
+      setRefError('Try a format like "John 3:16" or "Gen 1:1-5".');
+      return;
+    }
+    const entry = toc.find((b) => b.short_name === parsed.shortName);
+    if (!entry) { setRefError(`Couldn't find "${parsed.shortName}" in the contents.`); return; }
+    const chapterObj = entry.chapters.find((c) => c.chapter === parsed.chapter);
+    if (!chapterObj) { setRefError(`${parsed.shortName} doesn't have a chapter ${parsed.chapter}.`); return; }
+    const chapterPdfPage = chapterObj.page + 1;
+
+    if (!parsed.verseStart) {
+      setRefError('');
+      goToChapter(chapterPdfPage);
+      return;
+    }
+    if (!pdfDoc) { setRefError('Still loading the scan…'); return; }
+
+    setRefBusy(true);
+    setRefError('');
+    try {
+      const nextChapterObj = entry.chapters.find((c) => c.chapter === parsed.chapter + 1);
+      const upperBoundPdfPage = nextChapterObj ? nextChapterObj.page + 1 : entry.end_page + 1;
+      const targetPage = await findVersePage(chapterPdfPage, upperBoundPdfPage, parsed.verseStart);
+      setHighlightTerm('');
+      setHighlightChapter(false);
+      setHighlightVerse(parsed.verseStart);
+      scrollToHighlightRef.current = true;
+      goToPage(targetPage);
+    } catch {
+      setRefError('Could not locate that verse — try the chapter instead.');
+    } finally {
+      setRefBusy(false);
+    }
+  }, [toc, pdfDoc, findVersePage, goToChapter, goToPage]);
 
   // Keep ?page= in the URL in sync (shareable / refresh-safe)
   useEffect(() => {
