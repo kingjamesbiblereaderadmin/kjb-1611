@@ -598,7 +598,26 @@ export default function Original1611Page() {
       {/* Contents / Search sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="w-full sm:w-96 p-0 flex flex-col bg-neutral-950 text-neutral-100 border-white/10">
-          <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
+          {/* Go to a specific reference, e.g. "John 3:16" or "Gen 1:1-5" */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); goToReference(refInput); }}
+            className="p-3 border-b border-white/10"
+          >
+            <div className="flex items-center gap-2">
+              <Input
+                value={refInput}
+                onChange={(e) => { setRefInput(e.target.value); if (refError) setRefError(''); }}
+                placeholder="Go to reference — e.g. John 3:16"
+                className="bg-white/10 border-white/20 text-neutral-100"
+              />
+              <Button type="submit" size="sm" disabled={refBusy || !refInput.trim()}>
+                {refBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Go'}
+              </Button>
+            </div>
+            {refError && <p className="text-xs text-red-300 mt-1.5">{refError}</p>}
+          </form>
+
+          <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col flex-1 min-h-0">
             <TabsList className="w-full rounded-none border-b border-white/10 bg-transparent">
               <TabsTrigger value="contents" className="flex-1">Contents</TabsTrigger>
               <TabsTrigger value="search" className="flex-1">Search</TabsTrigger>
