@@ -250,6 +250,7 @@ export default function Original1611Page() {
   const goToSearchResult = useCallback((p, term) => {
     setHighlightTerm(term);
     setHighlightChapter(false);
+    setHighlightVerse(null);
     scrollToHighlightRef.current = true;
     goToPage(p);
   }, [goToPage]);
@@ -402,12 +403,19 @@ export default function Original1611Page() {
                 span.className = 'pdf-search-hit';
                 firstMatchSpan = span;
               }
+            } else if (highlightVerse != null && !firstMatchSpan) {
+              const vm = item.str.trim().match(/^(\d{1,3})[.:]?$/);
+              if (vm && parseInt(vm[1], 10) === highlightVerse) {
+                span.className = 'pdf-search-hit';
+                firstMatchSpan = span;
+              }
             }
             layerDiv.appendChild(span);
           }
           if (scrollToHighlightRef.current && firstMatchSpan) {
             scrollToHighlightRef.current = false;
             setHighlightChapter(false);
+            setHighlightVerse(null);
             requestAnimationFrame(() => {
               firstMatchSpan.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
             });
@@ -422,7 +430,7 @@ export default function Original1611Page() {
       }
     })();
     return () => { cancelled = true; };
-  }, [pdfDoc, pageNum, scale, clampPage, highlightTerm, highlightChapter]);
+  }, [pdfDoc, pageNum, scale, clampPage, highlightTerm, highlightChapter, highlightVerse]);
 
   // Keyboard paging
   useEffect(() => {
