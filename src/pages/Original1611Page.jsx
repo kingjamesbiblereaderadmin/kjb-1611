@@ -41,6 +41,106 @@ const MAX_SCALE = 2.6;
 // long "ſ" as "f") so a modern-spelling search still finds it.
 const fold = (s) => s.toLowerCase().replace(/f/g, 's');
 
+// --- "Go to reference" (e.g. "John 3:16", "Gen 1:1-5", "1 Cor 13") ---
+
+// Common abbreviations -> the TOC's `short_name`. Keys are normalized
+// (lowercase, periods/spaces stripped) before lookup.
+const BOOK_ALIASES = {
+  gen: 'Genesis', genesis: 'Genesis',
+  ex: 'Exodus', exo: 'Exodus', exod: 'Exodus', exodus: 'Exodus',
+  lev: 'Leviticus', levit: 'Leviticus', leviticus: 'Leviticus',
+  num: 'Numbers', numb: 'Numbers', numbers: 'Numbers',
+  deut: 'Deuteronomy', deu: 'Deuteronomy', deuteronomy: 'Deuteronomy',
+  josh: 'Joshua', joshua: 'Joshua',
+  judg: 'Judges', jdg: 'Judges', judges: 'Judges',
+  ruth: 'Ruth',
+  '1sam': '1 Samuel', '1samuel': '1 Samuel', 'isam': '1 Samuel', '1stsamuel': '1 Samuel', 'firstsamuel': '1 Samuel',
+  '2sam': '2 Samuel', '2samuel': '2 Samuel', 'iisam': '2 Samuel', '2ndsamuel': '2 Samuel', 'secondsamuel': '2 Samuel',
+  '1kgs': '1 Kings', '1ki': '1 Kings', '1kings': '1 Kings', 'ikings': '1 Kings', 'firstkings': '1 Kings',
+  '2kgs': '2 Kings', '2ki': '2 Kings', '2kings': '2 Kings', 'iikings': '2 Kings', 'secondkings': '2 Kings',
+  '1chr': '1 Chronicles', '1chron': '1 Chronicles', '1chronicles': '1 Chronicles', 'firstchronicles': '1 Chronicles',
+  '2chr': '2 Chronicles', '2chron': '2 Chronicles', '2chronicles': '2 Chronicles', 'secondchronicles': '2 Chronicles',
+  ezra: 'Ezra',
+  neh: 'Nehemiah', nehemiah: 'Nehemiah',
+  est: 'Esther', esth: 'Esther', esther: 'Esther',
+  job: 'Job',
+  ps: 'Psalms', psa: 'Psalms', psalm: 'Psalms', psalms: 'Psalms', pslm: 'Psalms',
+  prov: 'Proverbs', pro: 'Proverbs', proverbs: 'Proverbs',
+  eccl: 'Ecclesiastes', ecc: 'Ecclesiastes', ecclesiastes: 'Ecclesiastes', qoheleth: 'Ecclesiastes',
+  song: 'Song of Solomon', sos: 'Song of Solomon', songofsolomon: 'Song of Solomon', songofsongs: 'Song of Solomon', canticles: 'Song of Solomon',
+  isa: 'Isaiah', isaiah: 'Isaiah',
+  jer: 'Jeremiah', jeremiah: 'Jeremiah',
+  lam: 'Lamentations', lamentations: 'Lamentations',
+  ezek: 'Ezekiel', eze: 'Ezekiel', ezk: 'Ezekiel', ezekiel: 'Ezekiel',
+  dan: 'Daniel', daniel: 'Daniel',
+  hos: 'Hosea', hosea: 'Hosea',
+  joel: 'Joel',
+  am: 'Amos', amos: 'Amos',
+  obad: 'Obadiah', oba: 'Obadiah', obadiah: 'Obadiah',
+  jonah: 'Jonah', jon: 'Jonah',
+  mic: 'Micah', micah: 'Micah',
+  nah: 'Nahum', nahum: 'Nahum',
+  hab: 'Habakkuk', habakkuk: 'Habakkuk',
+  zeph: 'Zephaniah', zep: 'Zephaniah', zephaniah: 'Zephaniah',
+  hag: 'Haggai', haggai: 'Haggai',
+  zech: 'Zechariah', zec: 'Zechariah', zechariah: 'Zechariah',
+  mal: 'Malachi', malachi: 'Malachi',
+  matt: 'Matthew', mat: 'Matthew', mt: 'Matthew', matthew: 'Matthew',
+  mark: 'Mark', mrk: 'Mark', mk: 'Mark',
+  luke: 'Luke', luk: 'Luke', lk: 'Luke',
+  john: 'John', joh: 'John', jn: 'John', jhn: 'John',
+  acts: 'Acts', act: 'Acts',
+  rom: 'Romans', romans: 'Romans',
+  '1cor': '1 Corinthians', '1corinthians': '1 Corinthians', 'icor': '1 Corinthians', 'firstcorinthians': '1 Corinthians',
+  '2cor': '2 Corinthians', '2corinthians': '2 Corinthians', 'iicor': '2 Corinthians', 'secondcorinthians': '2 Corinthians',
+  gal: 'Galatians', galatians: 'Galatians',
+  eph: 'Ephesians', ephesians: 'Ephesians',
+  phil: 'Philippians', philippians: 'Philippians', php: 'Philippians',
+  col: 'Colossians', colossians: 'Colossians',
+  '1thess': '1 Thessalonians', '1thes': '1 Thessalonians', '1thessalonians': '1 Thessalonians', 'firstthessalonians': '1 Thessalonians',
+  '2thess': '2 Thessalonians', '2thes': '2 Thessalonians', '2thessalonians': '2 Thessalonians', 'secondthessalonians': '2 Thessalonians',
+  '1tim': '1 Timothy', '1timothy': '1 Timothy', 'firsttimothy': '1 Timothy',
+  '2tim': '2 Timothy', '2timothy': '2 Timothy', 'secondtimothy': '2 Timothy',
+  titus: 'Titus', tit: 'Titus',
+  philem: 'Philemon', phm: 'Philemon', philemon: 'Philemon',
+  heb: 'Hebrews', hebrews: 'Hebrews',
+  jas: 'James', james: 'James',
+  '1pet': '1 Peter', '1peter': '1 Peter', 'firstpeter': '1 Peter',
+  '2pet': '2 Peter', '2peter': '2 Peter', 'secondpeter': '2 Peter',
+  '1john': '1 John', '1jn': '1 John', 'firstjohn': '1 John',
+  '2john': '2 John', '2jn': '2 John', 'secondjohn': '2 John',
+  '3john': '3 John', '3jn': '3 John', 'thirdjohn': '3 John',
+  jude: 'Jude',
+  rev: 'Revelation', revelation: 'Revelation', revelations: 'Revelation', apoc: 'Revelation',
+};
+
+function normalizeBookToken(raw) {
+  let s = raw.trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  // Fold ordinal words/roman numerals to a leading digit: "first john" -> "1john"
+  s = s.replace(/^(first|1st|i)\s+/, '1').replace(/^(second|2nd|ii)\s+/, '2').replace(/^(third|3rd|iii)\s+/, '3');
+  s = s.replace(/\s+/g, '');
+  return s;
+}
+
+// Parses "John 3:16", "Jn 3:16-18", "Gen 1", "1 Cor 13:4" etc.
+// Returns { shortName, chapter, verseStart, verseEnd } or null if unparseable.
+function parseReference(raw, tocShortNames) {
+  const m = raw.trim().match(/^\s*([1-3]?\s*[A-Za-z][A-Za-z .]*?)\s+(\d{1,3})\s*(?::\s*(\d{1,3})\s*(?:[-\u2013]\s*(\d{1,3}))?)?\s*$/);
+  if (!m) return null;
+  const [, bookRaw, chapterRaw, verseStartRaw, verseEndRaw] = m;
+  const key = normalizeBookToken(bookRaw);
+  // Try an exact (normalized) match against the real short names first, then aliases.
+  const exact = tocShortNames.find((n) => normalizeBookToken(n) === key);
+  const shortName = exact || BOOK_ALIASES[key];
+  if (!shortName) return null;
+  return {
+    shortName,
+    chapter: parseInt(chapterRaw, 10),
+    verseStart: verseStartRaw ? parseInt(verseStartRaw, 10) : null,
+    verseEnd: verseEndRaw ? parseInt(verseEndRaw, 10) : null,
+  };
+}
+
 export default function Original1611Page() {
   const { setHideHeader } = useHeaderHide();
   const [searchParams, setSearchParams] = useSearchParams();
